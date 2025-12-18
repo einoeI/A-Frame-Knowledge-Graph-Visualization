@@ -1,0 +1,178 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 600px;
+                 background-color: #ffffff;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+             #config {
+                 float: left;
+                 width: 400px;
+                 height: 600px;
+             }
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+            <div id="config"></div>
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"gender": "male", "group": "men", "id": "arag", "label": "Aragorn", "mass": 1069, "shape": "dot", "size": 30}, {"gender": "male", "group": "hobbit", "id": "frod", "label": "Frodo", "mass": 2040, "shape": "dot", "size": 58}, {"gender": "male", "group": "ainur", "id": "ganda", "label": "Gandalf", "mass": 1235, "shape": "dot", "size": 35}, {"gender": "male", "group": "elves", "id": "lego", "label": "Legolas", "mass": 346, "shape": "dot", "size": 9}, {"gender": "male", "group": "hobbit", "id": "sams", "label": "Sam", "mass": 1400, "shape": "dot", "size": 40}, {"gender": "male", "group": "dwarf", "id": "gimli", "label": "Gimli", "mass": 403, "shape": "dot", "size": 11}, {"gender": "male", "group": "hobbit", "id": "merr", "label": "Merry", "mass": 595, "shape": "dot", "size": 17}, {"gender": "male", "group": "hobbit", "id": "pipp", "label": "Pippin", "mass": 771, "shape": "dot", "size": 22}, {"gender": "male", "group": "men", "id": "boro", "label": "Boromir", "mass": 293, "shape": "dot", "size": 8}, {"gender": "male", "group": "elves", "id": "elro", "label": "Elrond", "mass": 240, "shape": "dot", "size": 6}, {"gender": "male", "group": "men", "id": "eome", "label": "\u00c9omer", "mass": 238, "shape": "dot", "size": 6}, {"gender": "male", "group": "ainur", "id": "saur", "label": "Sauron", "mass": 339, "shape": "dot", "size": 9}, {"gender": "male", "group": "men", "id": "theod", "label": "Th\u00e9oden", "mass": 246, "shape": "dot", "size": 7}, {"gender": "male", "group": "men", "id": "fara", "label": "Faramir", "mass": 313, "shape": "dot", "size": 8}, {"gender": "male", "group": "men", "id": "arat", "label": "Arathorn", "mass": 36, "shape": "dot", "size": 5}, {"gender": "male", "group": "men", "id": "elen", "label": "Elendil", "mass": 89, "shape": "dot", "size": 5}, {"gender": "female", "group": "elves", "id": "arwe", "label": "Arwen", "mass": 51, "shape": "dot", "size": 5}, {"gender": "male", "group": "ainur", "id": "saru", "label": "Saruman", "mass": 312, "shape": "dot", "size": 8}, {"gender": "male", "group": "men", "id": "isil", "label": "Isildur", "mass": 103, "shape": "dot", "size": 5}, {"gender": "male", "group": "ents", "id": "treeb", "label": "Treebeard", "mass": 221, "shape": "dot", "size": 6}, {"gender": "male", "group": "hobbit", "id": "goll", "label": "Gollum", "mass": 581, "shape": "dot", "size": 16}, {"gender": "male", "group": "hobbit", "id": "bilb", "label": "Bilbo", "mass": 385, "shape": "dot", "size": 11}, {"gender": "female", "group": "men", "id": "eowy", "label": "\u00c9owyn", "mass": 115, "shape": "dot", "size": 5}, {"gender": "female", "group": "elves", "id": "gala", "label": "Galadriel", "mass": 95, "shape": "dot", "size": 5}, {"gender": "male", "group": "men", "id": "dene", "label": "Denethor", "mass": 168, "shape": "dot", "size": 5}, {"gender": "male", "group": "elves", "id": "glorf", "label": "Glorfindel", "mass": 43, "shape": "dot", "size": 5}, {"gender": "male", "group": "animal", "id": "sfax", "label": "Shadowfax", "mass": 78, "shape": "dot", "size": 5}, {"gender": "male", "group": "dwarf", "id": "gloi", "label": "Gl\u00f3in", "mass": 52, "shape": "dot", "size": 5}, {"gender": "male", "group": "elves", "id": "cele", "label": "Celeborn", "mass": 51, "shape": "dot", "size": 5}, {"gender": "male", "group": "men", "id": "eorl", "label": "Eorl", "mass": 56, "shape": "dot", "size": 5}, {"gender": "male", "group": "men", "id": "bere", "label": "Beregond", "mass": 77, "shape": "dot", "size": 5}, {"gender": "male", "group": "animal", "id": "bill", "label": "Bill", "mass": 45, "shape": "dot", "size": 5}, {"gender": "male", "group": "dwarf", "id": "bali", "label": "Balin", "mass": 30, "shape": "dot", "size": 5}, {"gender": "female", "group": "animal", "id": "shel", "label": "Shelob", "mass": 40, "shape": "dot", "size": 5}, {"gender": "male", "group": "elves", "id": "hald", "label": "Haldir", "mass": 44, "shape": "dot", "size": 5}, {"gender": "male", "group": "dwarf", "id": "duri", "label": "Durin", "mass": 54, "shape": "dot", "size": 5}, {"gender": "male", "group": "men", "id": "grim", "label": "Wormtongue", "mass": 65, "shape": "dot", "size": 5}, {"gender": "male", "group": "dwarf", "id": "thor", "label": "Thorin", "mass": 40, "shape": "dot", "size": 5}, {"gender": "male", "group": "ainur", "id": "tomb", "label": "Bombadil", "mass": 177, "shape": "dot", "size": 5}, {"gender": "male", "group": "dwarf", "id": "thra", "label": "Thr\u00e1in", "mass": 33, "shape": "dot", "size": 5}, {"gender": "male", "group": "elves", "id": "gild", "label": "Gildor", "mass": 32, "shape": "dot", "size": 5}, {"gender": "female", "group": "ainur", "id": "gber", "label": "Goldberry", "mass": 32, "shape": "dot", "size": 5}, {"gender": "male", "group": "orcs", "id": "gorb", "label": "Gorbag", "mass": 30, "shape": "dot", "size": 5}]);
+                  edges = new vis.DataSet([{"from": "arag", "to": "frod", "width": 1}, {"from": "arag", "to": "ganda", "width": 1}, {"from": "arag", "to": "lego", "width": 1}, {"from": "arag", "to": "sams", "width": 1}, {"from": "arag", "to": "gimli", "width": 1}, {"from": "arag", "to": "merr", "width": 1}, {"from": "arag", "to": "pipp", "width": 1}, {"from": "arag", "to": "boro", "width": 1}, {"from": "arag", "to": "elro", "width": 1}, {"from": "arag", "to": "eome", "width": 1}, {"from": "arag", "to": "saur", "width": 1}, {"from": "arag", "to": "theod", "width": 1}, {"from": "arag", "to": "fara", "width": 1}, {"from": "arag", "to": "arat", "width": 1}, {"from": "arag", "to": "elen", "width": 1}, {"from": "arag", "to": "arwe", "width": 1}, {"from": "arag", "to": "saru", "width": 1}, {"from": "arag", "to": "isil", "width": 1}, {"from": "arag", "to": "treeb", "width": 1}, {"from": "arag", "to": "goll", "width": 1}, {"from": "arag", "to": "bilb", "width": 1}, {"from": "arag", "to": "eowy", "width": 1}, {"from": "arag", "to": "gala", "width": 1}, {"from": "arag", "to": "dene", "width": 1}, {"from": "arag", "to": "glorf", "width": 1}, {"from": "arag", "to": "sfax", "width": 1}, {"from": "arag", "to": "gloi", "width": 1}, {"from": "arag", "to": "cele", "width": 1}, {"from": "arag", "to": "eorl", "width": 1}, {"from": "arag", "to": "bere", "width": 1}, {"from": "arag", "to": "bill", "width": 1}, {"from": "arag", "to": "bali", "width": 1}, {"from": "arag", "to": "shel", "width": 1}, {"from": "arag", "to": "hald", "width": 1}, {"from": "arag", "to": "duri", "width": 1}, {"from": "arag", "to": "grim", "width": 1}, {"from": "arag", "to": "thor", "width": 1}, {"from": "arag", "to": "tomb", "width": 1}, {"from": "arat", "to": "elen", "width": 1}, {"from": "arat", "to": "isil", "width": 1}, {"from": "arat", "to": "elro", "width": 1}, {"from": "arat", "to": "ganda", "width": 1}, {"from": "arat", "to": "theod", "width": 1}, {"from": "arat", "to": "lego", "width": 1}, {"from": "arat", "to": "arwe", "width": 1}, {"from": "arat", "to": "frod", "width": 1}, {"from": "arat", "to": "gimli", "width": 1}, {"from": "arat", "to": "eome", "width": 1}, {"from": "arat", "to": "fara", "width": 1}, {"from": "arat", "to": "gloi", "width": 1}, {"from": "arat", "to": "hald", "width": 1}, {"from": "arat", "to": "sfax", "width": 1}, {"from": "arwe", "to": "elro", "width": 1}, {"from": "arwe", "to": "frod", "width": 1}, {"from": "arwe", "to": "gala", "width": 1}, {"from": "arwe", "to": "saur", "width": 1}, {"from": "arwe", "to": "cele", "width": 1}, {"from": "arwe", "to": "sams", "width": 1}, {"from": "arwe", "to": "theod", "width": 1}, {"from": "arwe", "to": "bilb", "width": 1}, {"from": "arwe", "to": "elen", "width": 1}, {"from": "arwe", "to": "eome", "width": 1}, {"from": "arwe", "to": "fara", "width": 1}, {"from": "arwe", "to": "ganda", "width": 1}, {"from": "arwe", "to": "goll", "width": 1}, {"from": "arwe", "to": "dene", "width": 1}, {"from": "arwe", "to": "glorf", "width": 1}, {"from": "arwe", "to": "shel", "width": 1}, {"from": "bali", "to": "ganda", "width": 1}, {"from": "bali", "to": "frod", "width": 1}, {"from": "bali", "to": "gimli", "width": 1}, {"from": "bali", "to": "gloi", "width": 1}, {"from": "bali", "to": "thor", "width": 1}, {"from": "bali", "to": "thra", "width": 1}, {"from": "bali", "to": "bilb", "width": 1}, {"from": "bali", "to": "boro", "width": 1}, {"from": "bali", "to": "duri", "width": 1}, {"from": "bali", "to": "lego", "width": 1}, {"from": "bali", "to": "merr", "width": 1}, {"from": "bali", "to": "pipp", "width": 1}, {"from": "bali", "to": "sams", "width": 1}, {"from": "bere", "to": "pipp", "width": 1}, {"from": "bere", "to": "fara", "width": 1}, {"from": "bere", "to": "ganda", "width": 1}, {"from": "bere", "to": "dene", "width": 1}, {"from": "bere", "to": "boro", "width": 1}, {"from": "bere", "to": "eorl", "width": 1}, {"from": "bere", "to": "eome", "width": 1}, {"from": "bere", "to": "frod", "width": 1}, {"from": "bere", "to": "saru", "width": 1}, {"from": "bere", "to": "saur", "width": 1}, {"from": "bere", "to": "sfax", "width": 1}, {"from": "bilb", "to": "frod", "width": 1}, {"from": "bilb", "to": "ganda", "width": 1}, {"from": "bilb", "to": "sams", "width": 1}, {"from": "bilb", "to": "goll", "width": 1}, {"from": "bilb", "to": "elro", "width": 1}, {"from": "bilb", "to": "merr", "width": 1}, {"from": "bilb", "to": "pipp", "width": 1}, {"from": "bilb", "to": "thor", "width": 1}, {"from": "bilb", "to": "gild", "width": 1}, {"from": "bilb", "to": "gloi", "width": 1}, {"from": "bilb", "to": "saru", "width": 1}, {"from": "bilb", "to": "saur", "width": 1}, {"from": "bilb", "to": "gala", "width": 1}, {"from": "bilb", "to": "boro", "width": 1}, {"from": "bilb", "to": "isil", "width": 1}, {"from": "bilb", "to": "lego", "width": 1}, {"from": "bilb", "to": "elen", "width": 1}, {"from": "bilb", "to": "fara", "width": 1}, {"from": "bilb", "to": "gimli", "width": 1}, {"from": "bilb", "to": "tomb", "width": 1}, {"from": "bill", "to": "sams", "width": 1}, {"from": "bill", "to": "frod", "width": 1}, {"from": "bill", "to": "ganda", "width": 1}, {"from": "bill", "to": "merr", "width": 1}, {"from": "bill", "to": "boro", "width": 1}, {"from": "bill", "to": "gimli", "width": 1}, {"from": "bill", "to": "pipp", "width": 1}, {"from": "bill", "to": "tomb", "width": 1}, {"from": "boro", "to": "frod", "width": 1}, {"from": "boro", "to": "ganda", "width": 1}, {"from": "boro", "to": "pipp", "width": 1}, {"from": "boro", "to": "dene", "width": 1}, {"from": "boro", "to": "fara", "width": 1}, {"from": "boro", "to": "sams", "width": 1}, {"from": "boro", "to": "merr", "width": 1}, {"from": "boro", "to": "lego", "width": 1}, {"from": "boro", "to": "gimli", "width": 1}, {"from": "boro", "to": "isil", "width": 1}, {"from": "boro", "to": "elro", "width": 1}, {"from": "boro", "to": "saru", "width": 1}, {"from": "boro", "to": "saur", "width": 1}, {"from": "boro", "to": "elen", "width": 1}, {"from": "boro", "to": "treeb", "width": 1}, {"from": "boro", "to": "cele", "width": 1}, {"from": "boro", "to": "gala", "width": 1}, {"from": "boro", "to": "goll", "width": 1}, {"from": "boro", "to": "theod", "width": 1}, {"from": "boro", "to": "eome", "width": 1}, {"from": "boro", "to": "eorl", "width": 1}, {"from": "boro", "to": "gloi", "width": 1}, {"from": "cele", "to": "gala", "width": 1}, {"from": "cele", "to": "elro", "width": 1}, {"from": "cele", "to": "treeb", "width": 1}, {"from": "cele", "to": "ganda", "width": 1}, {"from": "cele", "to": "gimli", "width": 1}, {"from": "cele", "to": "hald", "width": 1}, {"from": "cele", "to": "saur", "width": 1}, {"from": "cele", "to": "elen", "width": 1}, {"from": "cele", "to": "frod", "width": 1}, {"from": "cele", "to": "glorf", "width": 1}, {"from": "cele", "to": "lego", "width": 1}, {"from": "cele", "to": "merr", "width": 1}, {"from": "cele", "to": "pipp", "width": 1}, {"from": "cele", "to": "sams", "width": 1}, {"from": "cele", "to": "theod", "width": 1}, {"from": "dene", "to": "ganda", "width": 1}, {"from": "dene", "to": "pipp", "width": 1}, {"from": "dene", "to": "fara", "width": 1}, {"from": "dene", "to": "theod", "width": 1}, {"from": "dene", "to": "frod", "width": 1}, {"from": "dene", "to": "isil", "width": 1}, {"from": "dene", "to": "saur", "width": 1}, {"from": "dene", "to": "saru", "width": 1}, {"from": "dene", "to": "sams", "width": 1}, {"from": "dene", "to": "sfax", "width": 1}, {"from": "dene", "to": "elen", "width": 1}, {"from": "dene", "to": "elro", "width": 1}, {"from": "dene", "to": "eorl", "width": 1}, {"from": "dene", "to": "goll", "width": 1}, {"from": "dene", "to": "merr", "width": 1}, {"from": "dene", "to": "shel", "width": 1}, {"from": "dene", "to": "eome", "width": 1}, {"from": "dene", "to": "treeb", "width": 1}, {"from": "duri", "to": "gimli", "width": 1}, {"from": "duri", "to": "ganda", "width": 1}, {"from": "duri", "to": "thor", "width": 1}, {"from": "duri", "to": "saur", "width": 1}, {"from": "duri", "to": "thra", "width": 1}, {"from": "duri", "to": "gloi", "width": 1}, {"from": "duri", "to": "lego", "width": 1}, {"from": "duri", "to": "elro", "width": 1}, {"from": "duri", "to": "gala", "width": 1}, {"from": "duri", "to": "merr", "width": 1}, {"from": "duri", "to": "pipp", "width": 1}, {"from": "elen", "to": "isil", "width": 1}, {"from": "elen", "to": "saur", "width": 1}, {"from": "elen", "to": "elro", "width": 1}, {"from": "elen", "to": "frod", "width": 1}, {"from": "elen", "to": "ganda", "width": 1}, {"from": "elen", "to": "eome", "width": 1}, {"from": "elen", "to": "fara", "width": 1}, {"from": "elen", "to": "eorl", "width": 1}, {"from": "elen", "to": "gala", "width": 1}, {"from": "elen", "to": "gimli", "width": 1}, {"from": "elen", "to": "pipp", "width": 1}, {"from": "elen", "to": "saru", "width": 1}, {"from": "elen", "to": "theod", "width": 1}, {"from": "elen", "to": "eowy", "width": 1}, {"from": "elen", "to": "grim", "width": 1}, {"from": "elen", "to": "lego", "width": 1}, {"from": "elen", "to": "merr", "width": 1}, {"from": "elen", "to": "sfax", "width": 1}, {"from": "elro", "to": "ganda", "width": 1}, {"from": "elro", "to": "frod", "width": 1}, {"from": "elro", "to": "saur", "width": 1}, {"from": "elro", "to": "gala", "width": 1}, {"from": "elro", "to": "sams", "width": 1}, {"from": "elro", "to": "glorf", "width": 1}, {"from": "elro", "to": "pipp", "width": 1}, {"from": "elro", "to": "gimli", "width": 1}, {"from": "elro", "to": "isil", "width": 1}, {"from": "elro", "to": "lego", "width": 1}, {"from": "elro", "to": "merr", "width": 1}, {"from": "elro", "to": "eome", "width": 1}, {"from": "elro", "to": "gloi", "width": 1}, {"from": "elro", "to": "fara", "width": 1}, {"from": "elro", "to": "goll", "width": 1}, {"from": "elro", "to": "saru", "width": 1}, {"from": "elro", "to": "eowy", "width": 1}, {"from": "elro", "to": "theod", "width": 1}, {"from": "elro", "to": "gild", "width": 1}, {"from": "elro", "to": "tomb", "width": 1}, {"from": "elro", "to": "treeb", "width": 1}, {"from": "eome", "to": "theod", "width": 1}, {"from": "eome", "to": "eowy", "width": 1}, {"from": "eome", "to": "ganda", "width": 1}, {"from": "eome", "to": "merr", "width": 1}, {"from": "eome", "to": "gimli", "width": 1}, {"from": "eome", "to": "lego", "width": 1}, {"from": "eome", "to": "saru", "width": 1}, {"from": "eome", "to": "grim", "width": 1}, {"from": "eome", "to": "eorl", "width": 1}, {"from": "eome", "to": "pipp", "width": 1}, {"from": "eome", "to": "fara", "width": 1}, {"from": "eome", "to": "gloi", "width": 1}, {"from": "eome", "to": "saur", "width": 1}, {"from": "eome", "to": "frod", "width": 1}, {"from": "eome", "to": "sfax", "width": 1}, {"from": "eome", "to": "treeb", "width": 1}, {"from": "eome", "to": "sams", "width": 1}, {"from": "eorl", "to": "theod", "width": 1}, {"from": "eorl", "to": "saru", "width": 1}, {"from": "eorl", "to": "ganda", "width": 1}, {"from": "eorl", "to": "saur", "width": 1}, {"from": "eorl", "to": "sfax", "width": 1}, {"from": "eorl", "to": "eowy", "width": 1}, {"from": "eorl", "to": "grim", "width": 1}, {"from": "eorl", "to": "gimli", "width": 1}, {"from": "eorl", "to": "lego", "width": 1}, {"from": "eorl", "to": "treeb", "width": 1}, {"from": "eowy", "to": "merr", "width": 1}, {"from": "eowy", "to": "fara", "width": 1}, {"from": "eowy", "to": "theod", "width": 1}, {"from": "eowy", "to": "ganda", "width": 1}, {"from": "eowy", "to": "saru", "width": 1}, {"from": "eowy", "to": "saur", "width": 1}, {"from": "eowy", "to": "grim", "width": 1}, {"from": "eowy", "to": "lego", "width": 1}, {"from": "eowy", "to": "gimli", "width": 1}, {"from": "fara", "to": "frod", "width": 1}, {"from": "fara", "to": "ganda", "width": 1}, {"from": "fara", "to": "sams", "width": 1}, {"from": "fara", "to": "pipp", "width": 1}, {"from": "fara", "to": "goll", "width": 1}, {"from": "fara", "to": "isil", "width": 1}, {"from": "fara", "to": "theod", "width": 1}, {"from": "fara", "to": "merr", "width": 1}, {"from": "fara", "to": "saur", "width": 1}, {"from": "fara", "to": "gala", "width": 1}, {"from": "fara", "to": "shel", "width": 1}, {"from": "fara", "to": "sfax", "width": 1}, {"from": "fara", "to": "treeb", "width": 1}, {"from": "frod", "to": "sams", "width": 1}, {"from": "frod", "to": "ganda", "width": 1}, {"from": "frod", "to": "goll", "width": 1}, {"from": "frod", "to": "pipp", "width": 1}, {"from": "frod", "to": "merr", "width": 1}, {"from": "frod", "to": "gimli", "width": 1}, {"from": "frod", "to": "lego", "width": 1}, {"from": "frod", "to": "saur", "width": 1}, {"from": "frod", "to": "tomb", "width": 1}, {"from": "frod", "to": "gala", "width": 1}, {"from": "frod", "to": "saru", "width": 1}, {"from": "frod", "to": "gild", "width": 1}, {"from": "frod", "to": "glorf", "width": 1}, {"from": "frod", "to": "gloi", "width": 1}, {"from": "frod", "to": "hald", "width": 1}, {"from": "frod", "to": "shel", "width": 1}, {"from": "frod", "to": "theod", "width": 1}, {"from": "frod", "to": "isil", "width": 1}, {"from": "frod", "to": "gber", "width": 1}, {"from": "frod", "to": "sfax", "width": 1}, {"from": "frod", "to": "gorb", "width": 1}, {"from": "frod", "to": "grim", "width": 1}, {"from": "frod", "to": "thor", "width": 1}, {"from": "frod", "to": "treeb", "width": 1}, {"from": "gala", "to": "sams", "width": 1}, {"from": "gala", "to": "ganda", "width": 1}, {"from": "gala", "to": "gimli", "width": 1}, {"from": "gala", "to": "lego", "width": 1}, {"from": "gala", "to": "saur", "width": 1}, {"from": "gala", "to": "treeb", "width": 1}, {"from": "gala", "to": "tomb", "width": 1}, {"from": "gala", "to": "gloi", "width": 1}, {"from": "gala", "to": "hald", "width": 1}, {"from": "gala", "to": "merr", "width": 1}, {"from": "gala", "to": "pipp", "width": 1}, {"from": "gala", "to": "saru", "width": 1}, {"from": "gala", "to": "gild", "width": 1}, {"from": "gala", "to": "glorf", "width": 1}, {"from": "gala", "to": "theod", "width": 1}, {"from": "ganda", "to": "pipp", "width": 1}, {"from": "ganda", "to": "saru", "width": 1}, {"from": "ganda", "to": "theod", "width": 1}, {"from": "ganda", "to": "gimli", "width": 1}, {"from": "ganda", "to": "sams", "width": 1}, {"from": "ganda", "to": "lego", "width": 1}, {"from": "ganda", "to": "sfax", "width": 1}, {"from": "ganda", "to": "merr", "width": 1}, {"from": "ganda", "to": "saur", "width": 1}, {"from": "ganda", "to": "treeb", "width": 1}, {"from": "ganda", "to": "goll", "width": 1}, {"from": "ganda", "to": "grim", "width": 1}, {"from": "ganda", "to": "thor", "width": 1}, {"from": "ganda", "to": "isil", "width": 1}, {"from": "ganda", "to": "gloi", "width": 1}, {"from": "ganda", "to": "gild", "width": 1}, {"from": "ganda", "to": "glorf", "width": 1}, {"from": "ganda", "to": "thra", "width": 1}, {"from": "ganda", "to": "tomb", "width": 1}, {"from": "gber", "to": "tomb", "width": 1}, {"from": "gild", "to": "pipp", "width": 1}, {"from": "gild", "to": "sams", "width": 1}, {"from": "gild", "to": "merr", "width": 1}, {"from": "gild", "to": "tomb", "width": 1}, {"from": "gimli", "to": "lego", "width": 1}, {"from": "gimli", "to": "merr", "width": 1}, {"from": "gimli", "to": "gloi", "width": 1}, {"from": "gimli", "to": "treeb", "width": 1}, {"from": "gimli", "to": "pipp", "width": 1}, {"from": "gimli", "to": "sams", "width": 1}, {"from": "gimli", "to": "saru", "width": 1}, {"from": "gimli", "to": "saur", "width": 1}, {"from": "gimli", "to": "theod", "width": 1}, {"from": "gimli", "to": "hald", "width": 1}, {"from": "gimli", "to": "sfax", "width": 1}, {"from": "gimli", "to": "isil", "width": 1}, {"from": "gimli", "to": "thra", "width": 1}, {"from": "gimli", "to": "glorf", "width": 1}, {"from": "gimli", "to": "grim", "width": 1}, {"from": "gimli", "to": "thor", "width": 1}, {"from": "gloi", "to": "lego", "width": 1}, {"from": "gloi", "to": "saur", "width": 1}, {"from": "gloi", "to": "glorf", "width": 1}, {"from": "gloi", "to": "saru", "width": 1}, {"from": "gloi", "to": "thor", "width": 1}, {"from": "gloi", "to": "goll", "width": 1}, {"from": "gloi", "to": "isil", "width": 1}, {"from": "gloi", "to": "thra", "width": 1}, {"from": "gloi", "to": "treeb", "width": 1}, {"from": "glorf", "to": "sams", "width": 1}, {"from": "glorf", "to": "merr", "width": 1}, {"from": "glorf", "to": "pipp", "width": 1}, {"from": "glorf", "to": "saur", "width": 1}, {"from": "glorf", "to": "lego", "width": 1}, {"from": "glorf", "to": "saru", "width": 1}, {"from": "glorf", "to": "theod", "width": 1}, {"from": "glorf", "to": "tomb", "width": 1}, {"from": "goll", "to": "sams", "width": 1}, {"from": "goll", "to": "saur", "width": 1}, {"from": "goll", "to": "shel", "width": 1}, {"from": "goll", "to": "isil", "width": 1}, {"from": "goll", "to": "saru", "width": 1}, {"from": "goll", "to": "lego", "width": 1}, {"from": "goll", "to": "pipp", "width": 1}, {"from": "goll", "to": "theod", "width": 1}, {"from": "goll", "to": "merr", "width": 1}, {"from": "goll", "to": "thor", "width": 1}, {"from": "goll", "to": "treeb", "width": 1}, {"from": "gorb", "to": "sams", "width": 1}, {"from": "gorb", "to": "shel", "width": 1}, {"from": "grim", "to": "saru", "width": 1}, {"from": "grim", "to": "theod", "width": 1}, {"from": "grim", "to": "sfax", "width": 1}, {"from": "grim", "to": "merr", "width": 1}, {"from": "grim", "to": "pipp", "width": 1}, {"from": "grim", "to": "treeb", "width": 1}, {"from": "grim", "to": "sams", "width": 1}, {"from": "hald", "to": "lego", "width": 1}, {"from": "hald", "to": "sams", "width": 1}, {"from": "hald", "to": "merr", "width": 1}, {"from": "hald", "to": "pipp", "width": 1}, {"from": "hald", "to": "saur", "width": 1}, {"from": "isil", "to": "saur", "width": 1}, {"from": "isil", "to": "sams", "width": 1}, {"from": "isil", "to": "saru", "width": 1}, {"from": "isil", "to": "lego", "width": 1}, {"from": "isil", "to": "pipp", "width": 1}, {"from": "isil", "to": "theod", "width": 1}, {"from": "isil", "to": "thra", "width": 1}, {"from": "lego", "to": "merr", "width": 1}, {"from": "lego", "to": "pipp", "width": 1}, {"from": "lego", "to": "sams", "width": 1}, {"from": "lego", "to": "treeb", "width": 1}, {"from": "lego", "to": "saur", "width": 1}, {"from": "lego", "to": "sfax", "width": 1}, {"from": "lego", "to": "theod", "width": 1}, {"from": "lego", "to": "saru", "width": 1}, {"from": "lego", "to": "thor", "width": 1}, {"from": "merr", "to": "pipp", "width": 1}, {"from": "merr", "to": "sams", "width": 1}, {"from": "merr", "to": "treeb", "width": 1}, {"from": "merr", "to": "theod", "width": 1}, {"from": "merr", "to": "saru", "width": 1}, {"from": "merr", "to": "tomb", "width": 1}, {"from": "merr", "to": "saur", "width": 1}, {"from": "merr", "to": "sfax", "width": 1}, {"from": "merr", "to": "shel", "width": 1}, {"from": "pipp", "to": "sams", "width": 1}, {"from": "pipp", "to": "treeb", "width": 1}, {"from": "pipp", "to": "saru", "width": 1}, {"from": "pipp", "to": "sfax", "width": 1}, {"from": "pipp", "to": "saur", "width": 1}, {"from": "pipp", "to": "theod", "width": 1}, {"from": "pipp", "to": "tomb", "width": 1}, {"from": "pipp", "to": "shel", "width": 1}, {"from": "sams", "to": "saur", "width": 1}, {"from": "sams", "to": "shel", "width": 1}, {"from": "sams", "to": "tomb", "width": 1}, {"from": "sams", "to": "saru", "width": 1}, {"from": "sams", "to": "theod", "width": 1}, {"from": "sams", "to": "sfax", "width": 1}, {"from": "sams", "to": "treeb", "width": 1}, {"from": "saru", "to": "saur", "width": 1}, {"from": "saru", "to": "theod", "width": 1}, {"from": "saru", "to": "treeb", "width": 1}, {"from": "saru", "to": "sfax", "width": 1}, {"from": "saru", "to": "thor", "width": 1}, {"from": "saur", "to": "shel", "width": 1}, {"from": "saur", "to": "theod", "width": 1}, {"from": "saur", "to": "thor", "width": 1}, {"from": "saur", "to": "thra", "width": 1}, {"from": "saur", "to": "treeb", "width": 1}, {"from": "saur", "to": "tomb", "width": 1}, {"from": "sfax", "to": "theod", "width": 1}, {"from": "shel", "to": "theod", "width": 1}, {"from": "theod", "to": "treeb", "width": 1}, {"from": "thor", "to": "thra", "width": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": true,
+        "filter": [
+            "physics"
+        ]
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "barnesHut": {
+            "avoidOverlap": 0,
+            "centralGravity": 0.3,
+            "damping": 0.09,
+            "gravitationalConstant": -80000,
+            "springConstant": 0.001,
+            "springLength": 250
+        },
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+                  // if this network requires displaying the configure window,
+                  // put it in its div
+                  options.configure["container"] = document.getElementById("config");
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>

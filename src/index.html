@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>LOTR Knowledge Graph - 3D VR Visualization</title>
+    <meta name="description" content="Lord of the Rings Character Network - A-Frame VR Visualization">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- A-Frame and dependencies -->
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
+
+    <!-- Custom components -->
+    <script src="components/graph-loader.js"></script>
+    <script src="components/graph-interaction.js"></script>
+    <script src="components/info-panel.js"></script>
+    <script src="components/vr-controls.js"></script>
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      /* Instructions overlay */
+      #instructions {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        background: rgba(30, 30, 50, 0.9);
+        border: 2px solid #7A84DD;
+        border-radius: 10px;
+        padding: 15px 20px;
+        color: white;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        z-index: 9999;
+        max-width: 250px;
+      }
+
+      #instructions h3 {
+        margin: 0 0 10px 0;
+        color: #8ACAE5;
+        font-size: 14px;
+      }
+
+      #instructions ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      #instructions li {
+        font-size: 12px;
+        color: #ccc;
+        margin: 6px 0;
+      }
+
+      #instructions li strong {
+        color: white;
+      }
+
+      /* Legend overlay */
+      #legend {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(30, 30, 50, 0.9);
+        border: 2px solid #7A84DD;
+        border-radius: 10px;
+        padding: 15px 20px;
+        color: white;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        z-index: 9999;
+      }
+
+      #legend h3 {
+        margin: 0 0 10px 0;
+        color: #8ACAE5;
+        font-size: 14px;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        margin: 5px 0;
+        font-size: 12px;
+      }
+
+      .legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 8px;
+      }
+
+      /* Loading indicator */
+      #loading {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(30, 30, 50, 0.95);
+        border: 2px solid #7A84DD;
+        border-radius: 10px;
+        padding: 30px 50px;
+        color: white;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        text-align: center;
+        z-index: 10000;
+      }
+
+      #loading h2 {
+        color: #8ACAE5;
+        margin: 0 0 10px 0;
+      }
+
+      #loading.hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Loading indicator -->
+    <div id="loading">
+      <h2>Loading Graph...</h2>
+      <p>43 characters, 450 connections</p>
+    </div>
+
+    <!-- Instructions panel -->
+    <div id="instructions">
+      <h3>Desktop Controls</h3>
+      <ul>
+        <li><strong>WASD</strong> - Move around</li>
+        <li><strong>Mouse</strong> - Look around</li>
+        <li><strong>Hover</strong> - View character info</li>
+        <li><strong>Click</strong> - Highlight connections</li>
+        <li><strong>Click empty</strong> - Reset view</li>
+      </ul>
+      <h3 style="margin-top: 12px;">VR Controls</h3>
+      <ul>
+        <li><strong>VR Button</strong> - Enter VR mode</li>
+        <li><strong>Gaze</strong> - Look at node to select</li>
+        <li><strong>Trigger</strong> - Click / Teleport</li>
+        <li><strong>Point</strong> - Aim at characters</li>
+      </ul>
+    </div>
+
+    <!-- Legend panel -->
+    <div id="legend">
+      <h3>Races</h3>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #BD9267"></div>
+        <span>Hobbits</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #7A84DD"></div>
+        <span>Men</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #8ACAE5"></div>
+        <span>Elves</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #B15B60"></div>
+        <span>Dwarves</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #3A7575"></div>
+        <span>Ainur (Wizards)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #E3845D"></div>
+        <span>Ents</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #020104"></div>
+        <span>Orcs</span>
+      </div>
+    </div>
+
+    <!-- A-Frame Scene -->
+    <a-scene
+      background="color: #222222"
+      cursor="rayOrigin: mouse; fuse: false"
+      raycaster="objects: .raycastable, .graph-node"
+      vr-mode-ui="enabled: true"
+    >
+      <!-- Assets -->
+      <a-assets>
+        <a-asset-item id="roboto-font" src="https://cdn.aframe.io/fonts/Roboto-msdf.json"></a-asset-item>
+      </a-assets>
+
+      <!-- Dark sky background -->
+      <a-sky color="#222222" class="raycastable" id="background"></a-sky>
+
+      <!-- Ambient lighting -->
+      <a-entity light="type: ambient; color: #ffffff; intensity: 0.6"></a-entity>
+
+      <!-- Directional light for better 3D effect -->
+      <a-entity light="type: directional; color: #ffffff; intensity: 0.4" position="1 2 1"></a-entity>
+
+      <!-- Camera rig with movement controls -->
+      <a-entity id="cameraRig" position="0 5 20" vr-mode-handler>
+        <a-entity
+          id="camera"
+          camera
+          look-controls="pointerLockEnabled: true"
+          wasd-controls="acceleration: 30; fly: true"
+          position="0 1.6 0"
+        >
+          <!-- Desktop cursor (mouse-based) -->
+          <a-entity
+            id="desktop-cursor"
+            cursor="fuse: false; rayOrigin: mouse"
+            raycaster="far: 100; objects: .graph-node, .raycastable"
+            position="0 0 -1"
+            geometry="primitive: ring; radiusInner: 0.01; radiusOuter: 0.015"
+            material="color: #8ACAE5; shader: flat; opacity: 0.8"
+          ></a-entity>
+
+          <!-- VR Gaze cursor (for headsets without controllers) -->
+          <a-entity
+            id="vr-gaze-cursor"
+            gaze-cursor="fuseTimeout: 1500; cursorColor: #8ACAE5"
+            raycaster="far: 100; objects: .graph-node"
+            visible="false"
+          ></a-entity>
+
+          <!-- Info panel as HUD element (child of camera, stays in view) -->
+          <a-entity
+            id="info-panel"
+            info-panel="width: 0.7; height: 0.7"
+            position="0.55 -0.15 -1.2"
+            visible="false"
+          ></a-entity>
+        </a-entity>
+      </a-entity>
+
+      <!-- VR Hand controllers with teleport -->
+      <a-entity
+        id="leftHand"
+        laser-controls="hand: left"
+        raycaster="objects: .graph-node, .raycastable"
+        teleport-controls="cameraRig: #cameraRig"
+      ></a-entity>
+      <a-entity
+        id="rightHand"
+        laser-controls="hand: right"
+        raycaster="objects: .graph-node, .raycastable"
+        line="color: #8ACAE5"
+      ></a-entity>
+
+      <!-- Graph container - loads and renders the knowledge graph -->
+      <a-entity
+        id="graph-container"
+        graph-loader="src: ./lotr_positioned.json; showLabels: true"
+        graph-interaction="infoPanelId: info-panel; graphContainerId: graph-container"
+        position="0 0 0"
+      ></a-entity>
+
+    </a-scene>
+
+    <script>
+      // Hide loading indicator when graph is loaded
+      document.addEventListener('DOMContentLoaded', function() {
+        const graphContainer = document.getElementById('graph-container');
+        const loadingEl = document.getElementById('loading');
+
+        if (graphContainer) {
+          graphContainer.addEventListener('graph-loaded', function(evt) {
+            console.log('Graph loaded:', evt.detail);
+            if (loadingEl) {
+              loadingEl.classList.add('hidden');
+            }
+          });
+
+          graphContainer.addEventListener('graph-error', function(evt) {
+            console.error('Graph error:', evt.detail);
+            if (loadingEl) {
+              loadingEl.innerHTML = '<h2>Error Loading Graph</h2><p>' + evt.detail.error + '</p>';
+            }
+          });
+        }
+      });
+
+      // Log when VR mode changes
+      document.querySelector('a-scene').addEventListener('enter-vr', function() {
+        console.log('Entered VR mode');
+        // Hide HTML overlays in VR
+        document.getElementById('instructions').style.display = 'none';
+        document.getElementById('legend').style.display = 'none';
+      });
+
+      document.querySelector('a-scene').addEventListener('exit-vr', function() {
+        console.log('Exited VR mode');
+        // Show HTML overlays again
+        document.getElementById('instructions').style.display = 'block';
+        document.getElementById('legend').style.display = 'block';
+      });
+    </script>
+  </body>
+</html>
