@@ -23,6 +23,7 @@ AFRAME.registerComponent('gaze-cursor', {
         this.hoverStartTime = 0;
         this.hoverTarget = null;
         this.fuseProgress = 0;
+        this.isVRMode = false;  // Only active in VR mode
 
         // Create cursor geometry
         this.createCursor();
@@ -30,10 +31,30 @@ AFRAME.registerComponent('gaze-cursor', {
         // Bind handlers
         this.onIntersection = this.onIntersection.bind(this);
         this.onIntersectionCleared = this.onIntersectionCleared.bind(this);
+        this.onEnterVR = this.onEnterVR.bind(this);
+        this.onExitVR = this.onExitVR.bind(this);
 
         // Listen for raycaster events
         this.el.addEventListener('raycaster-intersection', this.onIntersection);
         this.el.addEventListener('raycaster-intersection-cleared', this.onIntersectionCleared);
+
+        // Listen for VR mode changes
+        this.el.sceneEl.addEventListener('enter-vr', this.onEnterVR);
+        this.el.sceneEl.addEventListener('exit-vr', this.onExitVR);
+    },
+
+    onEnterVR: function () {
+        this.isVRMode = true;
+        this.el.setAttribute('visible', true);
+    },
+
+    onExitVR: function () {
+        this.isVRMode = false;
+        this.el.setAttribute('visible', false);
+        // Reset any ongoing hover
+        if (this.hoverTarget) {
+            this.onIntersectionCleared();
+        }
     },
 
     createCursor: function () {
@@ -58,6 +79,9 @@ AFRAME.registerComponent('gaze-cursor', {
     },
 
     onIntersection: function (evt) {
+        // Only process in VR mode
+        if (!this.isVRMode) return;
+
         const intersectedEl = evt.detail.els[0];
         if (!intersectedEl || !intersectedEl.classList.contains('graph-node')) return;
 
@@ -91,7 +115,8 @@ AFRAME.registerComponent('gaze-cursor', {
     },
 
     tick: function () {
-        if (!this.isHovering || !this.hoverTarget) return;
+        // Only process in VR mode
+        if (!this.isVRMode || !this.isHovering || !this.hoverTarget) return;
 
         const elapsed = Date.now() - this.hoverStartTime;
         this.fuseProgress = Math.min(elapsed / this.data.fuseTimeout, 1);
@@ -119,6 +144,8 @@ AFRAME.registerComponent('gaze-cursor', {
     remove: function () {
         this.el.removeEventListener('raycaster-intersection', this.onIntersection);
         this.el.removeEventListener('raycaster-intersection-cleared', this.onIntersectionCleared);
+        this.el.sceneEl.removeEventListener('enter-vr', this.onEnterVR);
+        this.el.sceneEl.removeEventListener('exit-vr', this.onExitVR);
     }
 });
 
