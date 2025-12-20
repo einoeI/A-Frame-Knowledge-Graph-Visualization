@@ -74,8 +74,9 @@ AFRAME.registerComponent('graph-loader', {
             window.graphData.links = data.links;
             window.graphData.metadata = data.metadata;
 
-            // Create node lookup map
+            // Create node lookup map and store colors
             data.nodes.forEach(node => {
+                node.color = RACE_COLORS[node.race] || '#7A84DD';
                 window.graphData.nodeMap[node.id] = node;
             });
 

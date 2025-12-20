@@ -76,9 +76,18 @@ AFRAME.registerComponent('graph-interaction', {
     },
 
     onBackgroundHover: function (evt) {
-        // When cursor moves to background, clear hover (but not selection)
-        if (!this.selectedNodeId) {
-            this.clearHover();
+        // When cursor moves to background, clear hover visual effects
+        if (this.hoveredNodeId && this.hoveredNodeId !== this.selectedNodeId) {
+            this.resetNodeAppearance(this.hoveredNodeId);
+        }
+        this.hoveredNodeId = null;
+
+        // If a node is selected, keep showing its info panel
+        // Otherwise hide the info panel
+        if (this.selectedNodeId) {
+            this.showInfoPanel(this.selectedNodeId);
+        } else {
+            this.hideInfoPanel();
         }
     },
 
@@ -98,43 +107,103 @@ AFRAME.registerComponent('graph-interaction', {
         const nodeEl = evt.target;
         const nodeId = nodeEl.getAttribute('data-node-id');
 
-        if (!nodeId || this.selectedNodeId) return;
+        if (!nodeId) return;
 
         // Already hovering this node - ignore
         if (this.hoveredNodeId === nodeId) return;
 
-        // If hovering a different node, reset the previous one
-        if (this.hoveredNodeId) {
+        // If hovering a different node, reset the previous one (but not if it's selected)
+        if (this.hoveredNodeId && this.hoveredNodeId !== this.selectedNodeId) {
             this.resetNodeAppearance(this.hoveredNodeId);
         }
 
         // Set new hover
         this.hoveredNodeId = nodeId;
 
-        // Scale up
-        nodeEl.setAttribute('scale', '1.2 1.2 1.2');
+        // Only apply hover visual effects if this node is NOT selected
+        if (nodeId !== this.selectedNodeId) {
+            // Scale up
+            nodeEl.setAttribute('scale', '1.2 1.2 1.2');
 
-        // Show info panel
+            // Add glow effect
+            const nodeColor = nodeEl.getAttribute('data-node-color');
+            nodeEl.setAttribute('material', 'emissive', nodeColor || '#ffffff');
+            nodeEl.setAttribute('material', 'emissiveIntensity', 0.3);
+        }
+
+        // Always show info panel for hovered node
         this.showInfoPanel(nodeId);
-
-        // Add glow effect
-        const nodeColor = nodeEl.getAttribute('data-node-color');
-        nodeEl.setAttribute('material', 'emissive', nodeColor || '#ffffff');
-        nodeEl.setAttribute('material', 'emissiveIntensity', 0.3);
     },
 
     onNodeMouseLeave: function (evt) {
-        // Don't hide on mouseleave - only hide when entering background or another node
-        // This prevents flickering from rapid enter/leave events
+        const nodeEl = evt.target;
+        const nodeId = nodeEl.getAttribute('data-node-id');
+
+        if (!nodeId) return;
+
+        // Reset hover appearance (but not if it's the selected node)
+        if (nodeId !== this.selectedNodeId) {
+            this.resetNodeAppearance(nodeId);
+        }
+
+        // Clear hover tracking
+        if (this.hoveredNodeId === nodeId) {
+            this.hoveredNodeId = null;
+        }
+
+        // Hide info panel only if no node is selected
+        // If a node is selected, show its info instead
+        if (this.selectedNodeId) {
+            this.showInfoPanel(this.selectedNodeId);
+        } else {
+            this.hideInfoPanel();
+        }
     },
 
     resetNodeAppearance: function (nodeId) {
         const nodeEl = this.graphLoader ? this.graphLoader.getNodeEntity(nodeId) : null;
-        if (nodeEl) {
-            nodeEl.setAttribute('scale', '1 1 1');
+        if (!nodeEl) return;
+
+        // Reset scale
+        nodeEl.setAttribute('scale', '1 1 1');
+
+        // If a node is selected, we need to restore to the highlight state
+        // (dimmed if not connected, normal if connected)
+        if (this.selectedNodeId) {
+            // Check if this node is connected to the selected node
+            const isConnected = this.isNodeConnected(nodeId, this.selectedNodeId);
+
+            if (isConnected) {
+                // Connected node - keep original color
+                const nodeData = window.graphData.nodeMap[nodeId];
+                nodeEl.setAttribute('material', 'color', nodeData?.color || '#7A84DD');
+                nodeEl.setAttribute('material', 'opacity', 1);
+                nodeEl.setAttribute('material', 'emissive', '#000000');
+                nodeEl.setAttribute('material', 'emissiveIntensity', 0);
+            } else {
+                // Unconnected node - dimmed
+                nodeEl.setAttribute('material', 'color', '#444444');
+                nodeEl.setAttribute('material', 'opacity', 0.3);
+                nodeEl.setAttribute('material', 'emissive', '#000000');
+                nodeEl.setAttribute('material', 'emissiveIntensity', 0);
+            }
+        } else {
+            // No selection - restore to original color
+            const nodeData = window.graphData.nodeMap[nodeId];
+            nodeEl.setAttribute('material', 'color', nodeData?.color || '#7A84DD');
+            nodeEl.setAttribute('material', 'opacity', 1);
             nodeEl.setAttribute('material', 'emissive', '#000000');
             nodeEl.setAttribute('material', 'emissiveIntensity', 0);
         }
+    },
+
+    isNodeConnected: function (nodeId, selectedNodeId) {
+        if (nodeId === selectedNodeId) return true;
+
+        return window.graphData.links.some(link =>
+            (link.source === selectedNodeId && link.target === nodeId) ||
+            (link.target === selectedNodeId && link.source === nodeId)
+        );
     },
 
     clearHover: function () {
@@ -174,9 +243,26 @@ AFRAME.registerComponent('graph-interaction', {
     },
 
     selectNode: function (nodeId) {
-        this.selectedNodeId = nodeId;
+        // If there was a previously selected node, deselect it first
+        if (this.selectedNodeId && this.selectedNodeId !== nodeId) {
+            // Reset previous selection
+            if (this.graphLoader) {
+                this.graphLoader.resetHighlight();
+            }
+        }
 
-        // Highlight node and connections
+        // Clear any hover state on the node we're about to select
+        if (this.hoveredNodeId === nodeId) {
+            const nodeEl = this.graphLoader ? this.graphLoader.getNodeEntity(nodeId) : null;
+            if (nodeEl) {
+                nodeEl.setAttribute('scale', '1 1 1');
+            }
+        }
+
+        this.selectedNodeId = nodeId;
+        this.hoveredNodeId = null;  // Clear hover since we're now selecting
+
+        // Highlight node and connections (turns node blue)
         if (this.graphLoader) {
             this.graphLoader.highlightNode(nodeId);
         }
