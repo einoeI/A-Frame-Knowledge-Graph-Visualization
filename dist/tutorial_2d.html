@@ -1,0 +1,76 @@
+<!DOCTYPE html><meta charset=utf-8><title>Tutorial - 2D Practice</title><meta name=description content="Practice the 2D controls before the user study"><meta name=viewport content="width=device-width, initial-scale=1"><script src=https://unpkg.com/vis-network@9.1.2/dist/vis-network.min.js></script><style>*{box-sizing:border-box;margin:0;padding:0}body{color:#fff;background:#222;font-family:Segoe UI,Arial,sans-serif;overflow:hidden}#network{width:100vw;height:100vh}#tutorial-panel{color:#fff;z-index:9999;text-align:center;background:#1e1e32f2;border:2px solid #8acae5;border-radius:10px;max-width:500px;padding:20px 30px;position:fixed;top:20px;left:50%;transform:translate(-50%)}#tutorial-panel h2{color:#8acae5;margin:0 0 15px;font-size:20px}#tutorial-panel p{margin:10px 0;font-size:14px;line-height:1.5}#tutorial-panel .highlight{color:#8acae5;font-weight:700}#info-panel{z-index:9999;background:#1e1e32f2;border:2px solid #7a84dd;border-radius:10px;min-width:200px;padding:15px 20px;display:none;position:fixed;top:20px;right:20px}#info-panel h3{color:#8acae5;margin:0 0 10px;font-size:16px}#info-panel .info-row{justify-content:space-between;margin:5px 0;font-size:13px;display:flex}#info-panel .info-label{color:#888}#info-panel .info-value{color:#fff;font-weight:500}#info-panel .connections-title{color:#8acae5;border-top:1px solid #444;margin-top:10px;padding-top:10px;font-size:13px}#info-panel .connection-item{color:#ccc;margin:3px 0;font-size:12px}#legend{z-index:9999;background:#1e1e32e6;border:2px solid #7a84dd;border-radius:10px;padding:15px 20px;position:fixed;bottom:20px;right:20px}#legend h3{color:#8acae5;margin:0 0 10px;font-size:14px}.legend-item{align-items:center;margin:5px 0;font-size:12px;display:flex}.legend-color{border-radius:50%;width:12px;height:12px;margin-right:8px}#instructions{z-index:9999;background:#1e1e32e6;border:2px solid #7a84dd;border-radius:10px;max-width:220px;padding:15px 20px;position:fixed;bottom:20px;left:20px}#instructions h3{color:#8acae5;margin:0 0 10px;font-size:14px}#instructions ul{margin:0;padding:0;list-style:none}#instructions li{color:#ccc;margin:6px 0;font-size:12px}#instructions li strong{color:#fff}#start-button{color:#1e1e32;cursor:pointer;z-index:9999;background:#8acae5;border:none;border-radius:8px;padding:15px 40px;font-size:16px;font-weight:700;position:fixed;bottom:20px;left:50%;transform:translate(-50%)}#start-button:hover{background:#7ab8d1}</style><body>
+    
+    <div id=tutorial-panel>
+        <h2>2D Tutorial</h2>
+        <p>This is a <span class=highlight>practice scene</span> with 4 characters.</p>
+        <p>Try the following:</p>
+        <p>1. <span class=highlight>Hover</span> over a character to see their info</p>
+        <p>2. <span class=highlight>Click</span> a character to highlight their connections</p>
+        <p>3. <span class=highlight>Click empty space</span> to reset</p>
+        <p>4. <span class=highlight>Scroll</span> to zoom in/out</p>
+    </div>
+
+    
+    <div id=network></div>
+
+    
+    <div id=info-panel>
+        <h3 id=char-name>Character Name</h3>
+        <div class=info-row>
+            <span class=info-label>Race:</span>
+            <span class=info-value id=char-race>-</span>
+        </div>
+        <div class=info-row>
+            <span class=info-label>Gender:</span>
+            <span class=info-value id=char-gender>-</span>
+        </div>
+        <div class=info-row>
+            <span class=info-label>Appearances:</span>
+            <span class=info-value id=char-weight>-</span>
+        </div>
+        <div class=info-row>
+            <span class=info-label>Connections:</span>
+            <span class=info-value id=char-connections>-</span>
+        </div>
+        <div class=connections-title>Strongest Connections:</div>
+        <div id=top-connections></div>
+    </div>
+
+    
+    <div id=legend>
+        <h3>Races</h3>
+        <div class=legend-item>
+            <div class=legend-color style=background:#bd9267></div>
+            <span>Hobbits</span>
+        </div>
+        <div class=legend-item>
+            <div class=legend-color style=background:#7a84dd></div>
+            <span>Men</span>
+        </div>
+        <div class=legend-item>
+            <div class=legend-color style=background:#8acae5></div>
+            <span>Elves</span>
+        </div>
+        <div class=legend-item>
+            <div class=legend-color style=background:#3a7575></div>
+            <span>Ainur (Wizards)</span>
+        </div>
+    </div>
+
+    
+    <div id=instructions>
+        <h3>Controls</h3>
+        <ul>
+            <li><strong>Hover</strong> - View character info</li>
+            <li><strong>Click</strong> - Highlight connections</li>
+            <li><strong>Click empty</strong> - Reset view</li>
+            <li><strong>Scroll</strong> - Zoom in/out</li>
+            <li><strong>Drag</strong> - Pan around</li>
+        </ul>
+    </div>
+
+    <a href=2d_visualization.html id=start-button>Start Full Visualization</a>
+
+    <script>const RACE_COLORS={men:"#7A84DD",elves:"#8ACAE5",hobbit:"#BD9267",dwarf:"#B15B60",ainur:"#3A7575",ents:"#E3845D",orcs:"#020104"},RACE_NAMES={men:"Men",elves:"Elves",hobbit:"Hobbit",dwarf:"Dwarf",ainur:"Ainur",ents:"Ent",orcs:"Orc"},graphData={nodes:[{id:"frodo",label:"Frodo",race:"hobbit",gender:"male",weight:100,total_connections:3},{id:"gandalf",label:"Gandalf",race:"ainur",gender:"male",weight:80,total_connections:2},{id:"aragorn",label:"Aragorn",race:"men",gender:"male",weight:70,total_connections:2},{id:"legolas",label:"Legolas",race:"elves",gender:"male",weight:50,total_connections:1}],links:[{source:"frodo",target:"gandalf",weight:100},{source:"frodo",target:"aragorn",weight:80},{source:"frodo",target:"legolas",weight:50},{source:"gandalf",target:"aragorn",weight:60}]},nodeMap={};graphData.nodes.forEach(e=>nodeMap[e.id]=e);const nodes=new vis.DataSet(graphData.nodes.map(e=>({id:e.id,label:e.label,color:{background:RACE_COLORS[e.race]||"#7A84DD",border:RACE_COLORS[e.race]||"#7A84DD",highlight:{background:"#046de7",border:"#046de7"}},size:20+e.weight/5,font:{color:"white",size:14}}))),edges=new vis.DataSet(graphData.links.map((e,t)=>({id:t,from:e.source,to:e.target,width:1+e.weight/50,color:{color:"#666666",highlight:"#046de7"}}))),container=document.getElementById("network"),data={nodes,edges},options={physics:{enabled:!0,barnesHut:{gravitationalConstant:-3e3,centralGravity:.3,springLength:150,springConstant:.04},stabilization:{iterations:100}},interaction:{hover:!0,tooltipDelay:0}},network=new vis.Network(container,data,options);let selectedNode=null;function getConnections(e){let t=[];return graphData.links.forEach(n=>{n.source===e?t.push({id:n.target,label:nodeMap[n.target].label,weight:n.weight}):n.target===e&&t.push({id:n.source,label:nodeMap[n.source].label,weight:n.weight})}),t.sort((e,t)=>t.weight-e.weight)}function showInfoPanel(e){let t=nodeMap[e];if(!t)return;document.getElementById("char-name").textContent=t.label,document.getElementById("char-race").textContent=RACE_NAMES[t.race]||t.race,document.getElementById("char-gender").textContent=t.gender?t.gender.charAt(0).toUpperCase()+t.gender.slice(1):"-",document.getElementById("char-weight").textContent=t.weight,document.getElementById("char-connections").textContent=t.total_connections;let n=getConnections(e);document.getElementById("top-connections").innerHTML=n.slice(0,5).map(e=>`<div class="connection-item">${e.label} (${e.weight})</div>`).join(""),document.getElementById("info-panel").style.display="block"}function hideInfoPanel(){document.getElementById("info-panel").style.display="none"}network.on("hoverNode",function(e){showInfoPanel(e.node)}),network.on("blurNode",function(e){selectedNode||hideInfoPanel()}),network.on("click",function(e){if(e.nodes.length>0){let t=e.nodes[0];if(selectedNode===t)selectedNode=null,network.unselectAll(),hideInfoPanel();else{selectedNode=t,showInfoPanel(t);let e=network.getConnectedEdges(t);network.selectNodes([t]),network.selectEdges(e)}}else selectedNode=null,network.unselectAll(),hideInfoPanel()});</script>
+
+

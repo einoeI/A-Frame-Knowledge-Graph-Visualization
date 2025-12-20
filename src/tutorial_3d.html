@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Tutorial - 3D VR Practice</title>
+    <meta name="description" content="Practice the 3D VR controls before the user study">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- A-Frame and dependencies -->
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
+
+    <!-- Custom components -->
+    <script src="components/graph-loader.js"></script>
+    <script src="components/graph-interaction.js"></script>
+    <script src="components/info-panel.js"></script>
+    <script src="components/vr-controls.js"></script>
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      #tutorial-panel {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(30, 30, 50, 0.95);
+        border: 2px solid #8ACAE5;
+        border-radius: 10px;
+        padding: 20px 30px;
+        color: white;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        z-index: 9999;
+        max-width: 500px;
+        text-align: center;
+      }
+
+      #tutorial-panel h2 {
+        margin: 0 0 15px 0;
+        color: #8ACAE5;
+        font-size: 20px;
+      }
+
+      #tutorial-panel p {
+        margin: 10px 0;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      #tutorial-panel .highlight {
+        color: #8ACAE5;
+        font-weight: bold;
+      }
+
+      #instructions {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        background: rgba(30, 30, 50, 0.9);
+        border: 2px solid #7A84DD;
+        border-radius: 10px;
+        padding: 15px 20px;
+        color: white;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        z-index: 9999;
+        max-width: 250px;
+      }
+
+      #instructions h3 {
+        margin: 0 0 10px 0;
+        color: #8ACAE5;
+        font-size: 14px;
+      }
+
+      #instructions ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      #instructions li {
+        font-size: 12px;
+        color: #ccc;
+        margin: 6px 0;
+      }
+
+      #instructions li strong {
+        color: white;
+      }
+
+      #legend {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(30, 30, 50, 0.9);
+        border: 2px solid #7A84DD;
+        border-radius: 10px;
+        padding: 15px 20px;
+        color: white;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        z-index: 9999;
+      }
+
+      #legend h3 {
+        margin: 0 0 10px 0;
+        color: #8ACAE5;
+        font-size: 14px;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        margin: 5px 0;
+        font-size: 12px;
+      }
+
+      .legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 8px;
+      }
+
+      #start-button {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #8ACAE5;
+        color: #1e1e32;
+        border: none;
+        border-radius: 8px;
+        padding: 15px 40px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        z-index: 9999;
+        font-family: 'Segoe UI', Arial, sans-serif;
+      }
+
+      #start-button:hover {
+        background: #7ab8d1;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Tutorial explanation -->
+    <div id="tutorial-panel">
+      <h2>3D VR Tutorial</h2>
+      <p>This is a <span class="highlight">practice scene</span> with 4 characters.</p>
+      <p>Try the following:</p>
+      <p>1. <span class="highlight">Hover</span> over a character to see their info</p>
+      <p>2. <span class="highlight">Click</span> a character to highlight their connections</p>
+      <p>3. <span class="highlight">Click empty space</span> to reset</p>
+      <p>4. Use <span class="highlight">WASD</span> to move around</p>
+    </div>
+
+    <!-- Instructions panel -->
+    <div id="instructions">
+      <h3>Desktop Controls</h3>
+      <ul>
+        <li><strong>WASD</strong> - Move around</li>
+        <li><strong>Mouse</strong> - Look around</li>
+        <li><strong>Hover</strong> - View character info</li>
+        <li><strong>Click</strong> - Highlight connections</li>
+        <li><strong>Click empty</strong> - Reset view</li>
+      </ul>
+      <h3 style="margin-top: 12px;">VR Controls</h3>
+      <ul>
+        <li><strong>VR Button</strong> - Enter VR mode</li>
+        <li><strong>Look at node</strong> - View character info</li>
+        <li><strong>Trigger</strong> - Highlight connections</li>
+      </ul>
+    </div>
+
+    <!-- Legend panel -->
+    <div id="legend">
+      <h3>Races</h3>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #BD9267"></div>
+        <span>Hobbits</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #7A84DD"></div>
+        <span>Men</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #8ACAE5"></div>
+        <span>Elves</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-color" style="background: #3A7575"></div>
+        <span>Ainur (Wizards)</span>
+      </div>
+    </div>
+
+    <a href="index.html" id="start-button">Start Full Visualization</a>
+
+    <!-- A-Frame Scene -->
+    <a-scene
+      background="color: #222222"
+      cursor="rayOrigin: mouse; fuse: false"
+      raycaster="objects: .raycastable, .graph-node"
+      vr-mode-ui="enabled: true"
+    >
+      <!-- Assets -->
+      <a-assets>
+        <a-asset-item id="roboto-font" src="https://cdn.aframe.io/fonts/Roboto-msdf.json"></a-asset-item>
+      </a-assets>
+
+      <!-- Dark sky background -->
+      <a-sky color="#222222" class="raycastable" id="background"></a-sky>
+
+      <!-- Ambient lighting -->
+      <a-entity light="type: ambient; color: #ffffff; intensity: 0.6"></a-entity>
+
+      <!-- Directional light -->
+      <a-entity light="type: directional; color: #ffffff; intensity: 0.4" position="1 2 1"></a-entity>
+
+      <!-- Camera rig -->
+      <a-entity id="cameraRig" position="0 2 8" vr-mode-handler>
+        <a-entity
+          id="camera"
+          camera
+          look-controls="pointerLockEnabled: true"
+          wasd-controls="acceleration: 30; fly: true"
+          position="0 1.6 0"
+        >
+          <!-- Desktop cursor -->
+          <a-entity
+            id="desktop-cursor"
+            cursor="fuse: false; rayOrigin: mouse"
+            raycaster="far: 100; objects: .graph-node, .raycastable"
+            position="0 0 -1"
+            geometry="primitive: ring; radiusInner: 0.01; radiusOuter: 0.015"
+            material="color: #8ACAE5; shader: flat; opacity: 0.8"
+          ></a-entity>
+
+          <!-- VR Gaze cursor -->
+          <a-entity
+            id="vr-gaze-cursor"
+            gaze-cursor="cursorColor: #8ACAE5"
+            raycaster="far: 100; objects: .graph-node"
+            visible="false"
+          ></a-entity>
+
+          <!-- Info panel -->
+          <a-entity
+            id="info-panel"
+            info-panel="width: 0.7; height: 0.7"
+            position="0.55 -0.15 -1.2"
+            visible="false"
+          ></a-entity>
+        </a-entity>
+      </a-entity>
+
+      <!-- VR Hand controllers -->
+      <a-entity
+        id="leftHand"
+        laser-controls="hand: left"
+        raycaster="objects: .graph-node, .raycastable"
+      ></a-entity>
+      <a-entity
+        id="rightHand"
+        laser-controls="hand: right"
+        raycaster="objects: .graph-node, .raycastable"
+        line="color: #8ACAE5"
+      ></a-entity>
+
+      <!-- Graph container - loads tutorial graph -->
+      <a-entity
+        id="graph-container"
+        graph-loader="src: ./tutorial_graph.json; showLabels: true"
+        graph-interaction="infoPanelId: info-panel; graphContainerId: graph-container"
+        position="0 0 0"
+      ></a-entity>
+
+    </a-scene>
+
+    <script>
+      // Hide overlays in VR
+      document.querySelector('a-scene').addEventListener('enter-vr', function() {
+        document.getElementById('tutorial-panel').style.display = 'none';
+        document.getElementById('instructions').style.display = 'none';
+        document.getElementById('legend').style.display = 'none';
+        document.getElementById('start-button').style.display = 'none';
+      });
+
+      document.querySelector('a-scene').addEventListener('exit-vr', function() {
+        document.getElementById('tutorial-panel').style.display = 'block';
+        document.getElementById('instructions').style.display = 'block';
+        document.getElementById('legend').style.display = 'block';
+        document.getElementById('start-button').style.display = 'block';
+      });
+    </script>
+  </body>
+</html>

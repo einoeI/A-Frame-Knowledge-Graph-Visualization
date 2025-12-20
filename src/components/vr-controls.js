@@ -58,24 +58,23 @@ AFRAME.registerComponent('gaze-cursor', {
     },
 
     createCursor: function () {
-        // Outer ring (progress indicator)
-        this.progressRing = document.createElement('a-ring');
-        this.progressRing.setAttribute('radius-inner', this.data.cursorScale * 0.6);
-        this.progressRing.setAttribute('radius-outer', this.data.cursorScale);
-        this.progressRing.setAttribute('color', this.data.cursorColor);
-        this.progressRing.setAttribute('opacity', 0.8);
-        this.progressRing.setAttribute('theta-length', 0);
-        this.progressRing.setAttribute('position', `0 0 -${this.data.distance}`);
-        this.progressRing.setAttribute('material', 'shader: flat; side: double');
-        this.el.appendChild(this.progressRing);
-
-        // Center dot
+        // Simple center dot cursor (no progress ring - we don't auto-click)
         this.centerDot = document.createElement('a-circle');
-        this.centerDot.setAttribute('radius', this.data.cursorScale * 0.3);
+        this.centerDot.setAttribute('radius', this.data.cursorScale * 0.4);
         this.centerDot.setAttribute('color', this.data.cursorColor);
         this.centerDot.setAttribute('position', `0 0 -${this.data.distance}`);
         this.centerDot.setAttribute('material', 'shader: flat; side: double');
         this.el.appendChild(this.centerDot);
+
+        // Outer ring (just for visibility, not progress)
+        this.progressRing = document.createElement('a-ring');
+        this.progressRing.setAttribute('radius-inner', this.data.cursorScale * 0.5);
+        this.progressRing.setAttribute('radius-outer', this.data.cursorScale * 0.7);
+        this.progressRing.setAttribute('color', this.data.cursorColor);
+        this.progressRing.setAttribute('opacity', 0.5);
+        this.progressRing.setAttribute('position', `0 0 -${this.data.distance}`);
+        this.progressRing.setAttribute('material', 'shader: flat; side: double');
+        this.el.appendChild(this.progressRing);
     },
 
     onIntersection: function (evt) {
@@ -106,39 +105,18 @@ AFRAME.registerComponent('gaze-cursor', {
 
         this.isHovering = false;
         this.hoverTarget = null;
-        this.fuseProgress = 0;
 
-        // Reset cursor
+        // Reset cursor color
         this.centerDot.setAttribute('color', this.data.cursorColor);
         this.progressRing.setAttribute('color', this.data.cursorColor);
-        this.progressRing.setAttribute('theta-length', 0);
     },
 
     tick: function () {
-        // Only process in VR mode
-        if (!this.isVRMode || !this.isHovering || !this.hoverTarget) return;
-
-        const elapsed = Date.now() - this.hoverStartTime;
-        this.fuseProgress = Math.min(elapsed / this.data.fuseTimeout, 1);
-
-        // Update progress ring
-        this.progressRing.setAttribute('theta-length', this.fuseProgress * 360);
-
-        // Trigger click when fuse completes
-        if (this.fuseProgress >= 1) {
-            this.hoverTarget.emit('click');
-
-            // Reset fuse
-            this.hoverStartTime = Date.now();
-            this.fuseProgress = 0;
-            this.progressRing.setAttribute('theta-length', 0);
-
-            // Visual feedback - pulse
-            this.centerDot.setAttribute('scale', '1.5 1.5 1.5');
-            setTimeout(() => {
-                this.centerDot.setAttribute('scale', '1 1 1');
-            }, 200);
-        }
+        // VR gaze cursor now works like desktop hover:
+        // - Looking at a node shows info panel (via mouseenter event)
+        // - Clicking requires manual controller trigger
+        // - No auto-click/fuse behavior
+        // Progress ring is hidden since we don't auto-click
     },
 
     remove: function () {

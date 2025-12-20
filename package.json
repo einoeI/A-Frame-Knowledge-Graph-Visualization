@@ -4,8 +4,8 @@
   "description": "LOTR Knowledge Graph - 2D and 3D VR Visualization",
   "homepage": "https://einoei.github.io/A-Frame-Knowledge-Graph-Visualization",
   "scripts": {
-    "start": "parcel serve ./src/index.html ./src/2d_visualization.html --port 8080",
-    "build": "parcel build ./src/index.html ./src/2d_visualization.html --public-url ./ --dist-dir ./dist",
+    "start": "parcel serve ./src/index.html ./src/2d_visualization.html ./src/tutorial_3d.html ./src/tutorial_2d.html --port 8080",
+    "build": "parcel build ./src/index.html ./src/2d_visualization.html ./src/tutorial_3d.html ./src/tutorial_2d.html --public-url ./ --dist-dir ./dist",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
     "lint": "eslint . --ext .js --fix"
