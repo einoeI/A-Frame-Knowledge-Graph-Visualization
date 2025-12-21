@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Tutorial - 2D Practice</title>
+    <meta name="description" content="Practice the 2D controls before the user study">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Vis.js -->
+    <script src="https://unpkg.com/vis-network@9.1.2/dist/vis-network.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #222222;
+            color: white;
+            overflow: hidden;
+        }
+
+        #network {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #tutorial-panel {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 30, 50, 0.95);
+            border: 2px solid #8ACAE5;
+            border-radius: 10px;
+            padding: 20px 30px;
+            color: white;
+            z-index: 9999;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        #tutorial-panel h2 {
+            margin: 0 0 15px 0;
+            color: #8ACAE5;
+            font-size: 20px;
+        }
+
+        #tutorial-panel p {
+            margin: 10px 0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        #tutorial-panel .highlight {
+            color: #8ACAE5;
+            font-weight: bold;
+        }
+
+        #info-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(30, 30, 50, 0.95);
+            border: 2px solid #7A84DD;
+            border-radius: 10px;
+            padding: 15px 20px;
+            min-width: 200px;
+            z-index: 9999;
+            display: none;
+        }
+
+        #info-panel h3 {
+            margin: 0 0 10px 0;
+            color: #8ACAE5;
+            font-size: 16px;
+        }
+
+        #info-panel .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            font-size: 13px;
+        }
+
+        #info-panel .info-label {
+            color: #888;
+        }
+
+        #info-panel .info-value {
+            color: white;
+            font-weight: 500;
+        }
+
+        #info-panel .connections-title {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #444;
+            color: #8ACAE5;
+            font-size: 13px;
+        }
+
+        #info-panel .connection-item {
+            font-size: 12px;
+            color: #ccc;
+            margin: 3px 0;
+        }
+
+        #legend {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(30, 30, 50, 0.9);
+            border: 2px solid #7A84DD;
+            border-radius: 10px;
+            padding: 15px 20px;
+            z-index: 9999;
+        }
+
+        #legend h3 {
+            margin: 0 0 10px 0;
+            color: #8ACAE5;
+            font-size: 14px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        #instructions {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(30, 30, 50, 0.9);
+            border: 2px solid #7A84DD;
+            border-radius: 10px;
+            padding: 15px 20px;
+            z-index: 9999;
+            max-width: 220px;
+        }
+
+        #instructions h3 {
+            margin: 0 0 10px 0;
+            color: #8ACAE5;
+            font-size: 14px;
+        }
+
+        #instructions ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #instructions li {
+            font-size: 12px;
+            color: #ccc;
+            margin: 6px 0;
+        }
+
+        #instructions li strong {
+            color: white;
+        }
+
+        #start-button {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #8ACAE5;
+            color: #1e1e32;
+            border: none;
+            border-radius: 8px;
+            padding: 15px 40px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 9999;
+        }
+
+        #start-button:hover {
+            background: #7ab8d1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Tutorial explanation -->
+    <div id="tutorial-panel">
+        <h2>2D Tutorial</h2>
+        <p>This is a <span class="highlight">practice scene</span> with 4 characters.</p>
+        <p>Try the following:</p>
+        <p>1. <span class="highlight">Hover</span> over a character to see their info</p>
+        <p>2. <span class="highlight">Click</span> a character to highlight their connections</p>
+        <p>3. <span class="highlight">Click empty space</span> to reset</p>
+        <p>4. <span class="highlight">Scroll</span> to zoom in/out</p>
+    </div>
+
+    <!-- Network container -->
+    <div id="network"></div>
+
+    <!-- Info panel -->
+    <div id="info-panel">
+        <h3 id="char-name">Character Name</h3>
+        <div class="info-row">
+            <span class="info-label">Race:</span>
+            <span class="info-value" id="char-race">-</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Gender:</span>
+            <span class="info-value" id="char-gender">-</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Appearances:</span>
+            <span class="info-value" id="char-weight">-</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Connections:</span>
+            <span class="info-value" id="char-connections">-</span>
+        </div>
+        <div class="connections-title">Strongest Connections:</div>
+        <div id="top-connections"></div>
+    </div>
+
+    <!-- Legend -->
+    <div id="legend">
+        <h3>Races</h3>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #BD9267"></div>
+            <span>Hobbits</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #7A84DD"></div>
+            <span>Men</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #8ACAE5"></div>
+            <span>Elves</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #3A7575"></div>
+            <span>Ainur (Wizards)</span>
+        </div>
+    </div>
+
+    <!-- Instructions -->
+    <div id="instructions">
+        <h3>Controls</h3>
+        <ul>
+            <li><strong>Hover</strong> - View character info</li>
+            <li><strong>Click</strong> - Highlight connections</li>
+            <li><strong>Click empty</strong> - Reset view</li>
+            <li><strong>Scroll</strong> - Zoom in/out</li>
+            <li><strong>Drag</strong> - Pan around</li>
+        </ul>
+    </div>
+
+    <a href="2d_visualization.html" id="start-button">Start Full Visualization</a>
+
+    <script>
+        // Race colors
+        const RACE_COLORS = {
+            'men': '#7A84DD',
+            'elves': '#8ACAE5',
+            'hobbit': '#BD9267',
+            'dwarf': '#B15B60',
+            'ainur': '#3A7575',
+            'ents': '#E3845D',
+            'orcs': '#020104'
+        };
+
+        const RACE_NAMES = {
+            'men': 'Men',
+            'elves': 'Elves',
+            'hobbit': 'Hobbit',
+            'dwarf': 'Dwarf',
+            'ainur': 'Ainur',
+            'ents': 'Ent',
+            'orcs': 'Orc'
+        };
+
+        // Tutorial data
+        const graphData = {
+            nodes: [
+                { id: 'frodo', label: 'Frodo', race: 'hobbit', gender: 'male', weight: 100, total_connections: 3 },
+                { id: 'gandalf', label: 'Gandalf', race: 'ainur', gender: 'male', weight: 80, total_connections: 2 },
+                { id: 'aragorn', label: 'Aragorn', race: 'men', gender: 'male', weight: 70, total_connections: 2 },
+                { id: 'legolas', label: 'Legolas', race: 'elves', gender: 'male', weight: 50, total_connections: 1 }
+            ],
+            links: [
+                { source: 'frodo', target: 'gandalf', weight: 100 },
+                { source: 'frodo', target: 'aragorn', weight: 80 },
+                { source: 'frodo', target: 'legolas', weight: 50 },
+                { source: 'gandalf', target: 'aragorn', weight: 60 }
+            ]
+        };
+
+        // Create node map
+        const nodeMap = {};
+        graphData.nodes.forEach(n => nodeMap[n.id] = n);
+
+        // Create vis.js nodes
+        const nodes = new vis.DataSet(graphData.nodes.map(node => ({
+            id: node.id,
+            label: node.label,
+            color: {
+                background: RACE_COLORS[node.race] || '#7A84DD',
+                border: RACE_COLORS[node.race] || '#7A84DD',
+                highlight: { background: '#046de7', border: '#046de7' }
+            },
+            size: 20 + (node.weight / 5),
+            font: { color: 'white', size: 14 }
+        })));
+
+        // Create vis.js edges
+        const edges = new vis.DataSet(graphData.links.map((link, i) => ({
+            id: i,
+            from: link.source,
+            to: link.target,
+            width: 1 + (link.weight / 50),
+            color: { color: '#666666', highlight: '#046de7' }
+        })));
+
+        // Create network
+        const container = document.getElementById('network');
+        const data = { nodes, edges };
+        const options = {
+            physics: {
+                enabled: true,
+                barnesHut: {
+                    gravitationalConstant: -3000,
+                    centralGravity: 0.3,
+                    springLength: 150,
+                    springConstant: 0.04
+                },
+                stabilization: { iterations: 100 }
+            },
+            interaction: {
+                hover: true,
+                tooltipDelay: 0
+            }
+        };
+
+        const network = new vis.Network(container, data, options);
+
+        let selectedNode = null;
+
+        // Get connections for a node
+        function getConnections(nodeId) {
+            const connections = [];
+            graphData.links.forEach(link => {
+                if (link.source === nodeId) {
+                    connections.push({ id: link.target, label: nodeMap[link.target].label, weight: link.weight });
+                } else if (link.target === nodeId) {
+                    connections.push({ id: link.source, label: nodeMap[link.source].label, weight: link.weight });
+                }
+            });
+            return connections.sort((a, b) => b.weight - a.weight);
+        }
+
+        // Show info panel
+        function showInfoPanel(nodeId) {
+            const node = nodeMap[nodeId];
+            if (!node) return;
+
+            document.getElementById('char-name').textContent = node.label;
+            document.getElementById('char-race').textContent = RACE_NAMES[node.race] || node.race;
+            document.getElementById('char-gender').textContent = node.gender ? node.gender.charAt(0).toUpperCase() + node.gender.slice(1) : '-';
+            document.getElementById('char-weight').textContent = node.weight;
+            document.getElementById('char-connections').textContent = node.total_connections;
+
+            const connections = getConnections(nodeId);
+            const topConns = document.getElementById('top-connections');
+            topConns.innerHTML = connections.slice(0, 5).map(c =>
+                `<div class="connection-item">${c.label} (${c.weight})</div>`
+            ).join('');
+
+            document.getElementById('info-panel').style.display = 'block';
+        }
+
+        // Hide info panel
+        function hideInfoPanel() {
+            document.getElementById('info-panel').style.display = 'none';
+        }
+
+        // Hover events
+        network.on('hoverNode', function(params) {
+            showInfoPanel(params.node);
+        });
+
+        network.on('blurNode', function(params) {
+            if (!selectedNode) {
+                hideInfoPanel();
+            }
+        });
+
+        // Click events
+        network.on('click', function(params) {
+            if (params.nodes.length > 0) {
+                const nodeId = params.nodes[0];
+
+                if (selectedNode === nodeId) {
+                    // Deselect
+                    selectedNode = null;
+                    network.unselectAll();
+                    hideInfoPanel();
+                } else {
+                    // Select
+                    selectedNode = nodeId;
+                    showInfoPanel(nodeId);
+
+                    // Highlight connected edges
+                    const connectedEdges = network.getConnectedEdges(nodeId);
+                    network.selectNodes([nodeId]);
+                    network.selectEdges(connectedEdges);
+                }
+            } else {
+                // Click on empty space
+                selectedNode = null;
+                network.unselectAll();
+                hideInfoPanel();
+            }
+        });
+    </script>
+</body>
+</html>
