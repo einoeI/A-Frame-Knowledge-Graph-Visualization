@@ -228,7 +228,54 @@ AFRAME.registerComponent('graph-loader', {
         console.log('[GraphLoader] Created', this.edgeEntities.length, 'edges');
     },
 
-    // Public method to highlight a node and its connections
+    // Public method to highlight a node on hover (light grey/white)
+    highlightNodeHover: function (nodeId) {
+        const node = window.graphData.nodeMap[nodeId];
+        if (!node) return;
+
+        // Get connected node IDs
+        const connectedIds = new Set([nodeId]);
+        window.graphData.links.forEach(link => {
+            if (link.source === nodeId) connectedIds.add(link.target);
+            if (link.target === nodeId) connectedIds.add(link.source);
+        });
+
+        // Update node appearances
+        Object.keys(this.nodeEntities).forEach(id => {
+            const nodeEl = this.nodeEntities[id];
+            const nodeData = window.graphData.nodeMap[id];
+
+            if (id === nodeId) {
+                // Hovered node - light grey outline effect
+                nodeEl.setAttribute('material', 'emissive', '#ffffff');
+                nodeEl.setAttribute('material', 'emissiveIntensity', 0.4);
+            } else if (connectedIds.has(id)) {
+                // Connected node - light highlight
+                nodeEl.setAttribute('material', 'emissive', '#aaaaaa');
+                nodeEl.setAttribute('material', 'emissiveIntensity', 0.2);
+            } else {
+                // Unconnected node - slightly dimmed
+                nodeEl.setAttribute('material', 'opacity', 0.6);
+            }
+        });
+
+        // Update edge appearances - highlight connected edges in white/light grey
+        this.edgeEntities.forEach(edgeEl => {
+            const source = edgeEl.getAttribute('data-source');
+            const target = edgeEl.getAttribute('data-target');
+
+            if (source === nodeId || target === nodeId) {
+                // Connected edge - white/light grey
+                edgeEl.setAttribute('line', 'color', '#ffffff');
+                edgeEl.setAttribute('line', 'opacity', 0.8);
+            } else {
+                // Unconnected edge - dimmed
+                edgeEl.setAttribute('line', 'opacity', 0.15);
+            }
+        });
+    },
+
+    // Public method to highlight a node and its connections (click - blue)
     highlightNode: function (nodeId) {
         const node = window.graphData.nodeMap[nodeId];
         if (!node) return;
