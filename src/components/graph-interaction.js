@@ -21,6 +21,7 @@ const RACE_NAMES = {
 AFRAME.registerComponent('graph-interaction', {
     schema: {
         infoPanelId: { type: 'string', default: 'info-panel' },
+        hoverPanelId: { type: 'string', default: 'hover-panel' },
         graphContainerId: { type: 'string', default: 'graph-container' }
     },
 
@@ -28,7 +29,8 @@ AFRAME.registerComponent('graph-interaction', {
         this.selectedNodeId = null;
         this.hoveredNodeId = null;
         this.graphLoader = null;
-        this.infoPanel = null;
+        this.infoPanel = null;      // Panel for selected node (right side)
+        this.hoverPanel = null;     // Panel for hovered node (left side)
         this.isHoverLocked = false;  // Prevents rapid hover changes
 
         // Bind event handlers
@@ -51,8 +53,9 @@ AFRAME.registerComponent('graph-interaction', {
             this.graphLoader = graphContainer.components['graph-loader'];
         }
 
-        // Get info panel
+        // Get info panels
         this.infoPanel = document.getElementById(this.data.infoPanelId);
+        this.hoverPanel = document.getElementById(this.data.hoverPanelId);
 
         // Setup event listeners for all nodes
         this.setupNodeListeners();
@@ -82,11 +85,11 @@ AFRAME.registerComponent('graph-interaction', {
         }
         this.hoveredNodeId = null;
 
-        // If a node is selected, keep showing its info panel
-        // Otherwise hide the info panel
-        if (this.selectedNodeId) {
-            this.showInfoPanel(this.selectedNodeId);
-        } else {
+        // Always hide hover panel when moving to background
+        this.hideHoverPanel();
+
+        // Hide info panel only if no node is selected
+        if (!this.selectedNodeId) {
             this.hideInfoPanel();
         }
     },
@@ -131,8 +134,17 @@ AFRAME.registerComponent('graph-interaction', {
             nodeEl.setAttribute('material', 'emissiveIntensity', 0.3);
         }
 
-        // Always show info panel for hovered node
-        this.showInfoPanel(nodeId);
+        // Show info panel based on whether a node is selected
+        if (this.selectedNodeId) {
+            // A node is selected - show hover panel for the hovered node (if different)
+            if (nodeId !== this.selectedNodeId) {
+                this.showHoverPanel(nodeId);
+            }
+            // Keep the selected node info visible in the main panel
+        } else {
+            // No selection - show info in main panel
+            this.showInfoPanel(nodeId);
+        }
     },
 
     onNodeMouseLeave: function (evt) {
@@ -151,11 +163,11 @@ AFRAME.registerComponent('graph-interaction', {
             this.hoveredNodeId = null;
         }
 
-        // Hide info panel only if no node is selected
-        // If a node is selected, show its info instead
-        if (this.selectedNodeId) {
-            this.showInfoPanel(this.selectedNodeId);
-        } else {
+        // Hide hover panel (always hide when leaving a node)
+        this.hideHoverPanel();
+
+        // Hide main info panel only if no node is selected
+        if (!this.selectedNodeId) {
             this.hideInfoPanel();
         }
     },
@@ -181,9 +193,9 @@ AFRAME.registerComponent('graph-interaction', {
                 nodeEl.setAttribute('material', 'emissive', '#000000');
                 nodeEl.setAttribute('material', 'emissiveIntensity', 0);
             } else {
-                // Unconnected node - dimmed
-                nodeEl.setAttribute('material', 'color', '#444444');
-                nodeEl.setAttribute('material', 'opacity', 0.3);
+                // Unconnected node - dimmed (more visible)
+                nodeEl.setAttribute('material', 'color', '#666666');
+                nodeEl.setAttribute('material', 'opacity', 0.5);
                 nodeEl.setAttribute('material', 'emissive', '#000000');
                 nodeEl.setAttribute('material', 'emissiveIntensity', 0);
             }
@@ -210,6 +222,10 @@ AFRAME.registerComponent('graph-interaction', {
         if (this.hoveredNodeId) {
             this.resetNodeAppearance(this.hoveredNodeId);
             this.hoveredNodeId = null;
+        }
+        this.hideHoverPanel();
+        // Only hide info panel if no node is selected
+        if (!this.selectedNodeId) {
             this.hideInfoPanel();
         }
     },
@@ -283,8 +299,9 @@ AFRAME.registerComponent('graph-interaction', {
             this.graphLoader.resetHighlight();
         }
 
-        // Hide info panel
+        // Hide both panels
         this.hideInfoPanel();
+        this.hideHoverPanel();
 
         // Emit event
         this.el.emit('node-deselected', { nodeId: prevNodeId });
@@ -335,6 +352,54 @@ AFRAME.registerComponent('graph-interaction', {
     hideInfoPanel: function () {
         if (this.infoPanel) {
             this.infoPanel.setAttribute('visible', false);
+        }
+    },
+
+    showHoverPanel: function (nodeId) {
+        if (!this.hoverPanel || !window.graphData.nodeMap) return;
+
+        const node = window.graphData.nodeMap[nodeId];
+        if (!node) return;
+
+        // Get connections
+        const connections = this.getNodeConnections(nodeId);
+
+        // Update hover panel content (same IDs as info panel, but in hoverPanel)
+        const nameEl = this.hoverPanel.querySelector('#panel-name');
+        const raceEl = this.hoverPanel.querySelector('#panel-race');
+        const genderEl = this.hoverPanel.querySelector('#panel-gender');
+        const weightEl = this.hoverPanel.querySelector('#panel-weight');
+        const connectionsCountEl = this.hoverPanel.querySelector('#panel-connections');
+        const topConnectionsEl = this.hoverPanel.querySelector('#panel-top-connections');
+
+        // Set values
+        if (nameEl) nameEl.setAttribute('value', node.label);
+        if (raceEl) raceEl.setAttribute('value', RACE_NAMES[node.race] || node.race);
+        if (genderEl) {
+            const gender = node.gender ? node.gender.charAt(0).toUpperCase() + node.gender.slice(1) : '-';
+            genderEl.setAttribute('value', gender);
+        }
+        if (weightEl) weightEl.setAttribute('value', node.weight.toString());
+        if (connectionsCountEl) {
+            const connCount = node.total_connections || connections.length;
+            connectionsCountEl.setAttribute('value', connCount.toString());
+        }
+
+        // Top 5 connections
+        if (topConnectionsEl) {
+            const topConns = connections.slice(0, 5)
+                .map(c => `${c.label} (${c.weight})`)
+                .join('\n');
+            topConnectionsEl.setAttribute('value', topConns || 'None');
+        }
+
+        // Show hover panel
+        this.hoverPanel.setAttribute('visible', true);
+    },
+
+    hideHoverPanel: function () {
+        if (this.hoverPanel) {
+            this.hoverPanel.setAttribute('visible', false);
         }
     },
 

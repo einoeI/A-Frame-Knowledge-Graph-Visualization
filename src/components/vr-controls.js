@@ -262,11 +262,7 @@ AFRAME.registerComponent('vr-mode-handler', {
             camera.setAttribute('wasd-controls', 'enabled', false);
         }
 
-        // Scale up info panel for VR readability
-        const infoPanel = document.querySelector('#info-panel');
-        if (infoPanel) {
-            infoPanel.setAttribute('scale', '1.5 1.5 1.5');
-        }
+        // No scaling needed - panels are already sized appropriately
     },
 
     onExitVR: function () {
@@ -276,12 +272,6 @@ AFRAME.registerComponent('vr-mode-handler', {
         const camera = document.querySelector('[wasd-controls]');
         if (camera) {
             camera.setAttribute('wasd-controls', 'enabled', true);
-        }
-
-        // Reset info panel scale
-        const infoPanel = document.querySelector('#info-panel');
-        if (infoPanel) {
-            infoPanel.setAttribute('scale', '1 1 1');
         }
     },
 

@@ -18,7 +18,7 @@ const RACE_COLORS = {
     'animal': '#8ACAE5'
 };
 
-// Highlight color
+// Highlight color for selected nodes
 const HIGHLIGHT_COLOR = '#046de7';
 
 // Store global graph data for other components
@@ -255,9 +255,9 @@ AFRAME.registerComponent('graph-loader', {
                 nodeEl.setAttribute('material', 'color', nodeData.color);
                 nodeEl.setAttribute('material', 'opacity', 1);
             } else {
-                // Unconnected node - dim
-                nodeEl.setAttribute('material', 'color', '#444444');
-                nodeEl.setAttribute('material', 'opacity', 0.3);
+                // Unconnected node - dim (more visible than before)
+                nodeEl.setAttribute('material', 'color', '#666666');
+                nodeEl.setAttribute('material', 'opacity', 0.5);
             }
         });
 
@@ -271,9 +271,9 @@ AFRAME.registerComponent('graph-loader', {
                 edgeEl.setAttribute('line', 'color', HIGHLIGHT_COLOR);
                 edgeEl.setAttribute('line', 'opacity', 0.9);
             } else {
-                // Unconnected edge - dim
-                edgeEl.setAttribute('line', 'color', '#333333');
-                edgeEl.setAttribute('line', 'opacity', 0.1);
+                // Unconnected edge - dim (more visible than before)
+                edgeEl.setAttribute('line', 'color', '#555555');
+                edgeEl.setAttribute('line', 'opacity', 0.2);
             }
         });
 
@@ -284,7 +284,8 @@ AFRAME.registerComponent('graph-loader', {
                 labelEl.setAttribute('visible', true);
                 labelEl.setAttribute('opacity', 1);
             } else {
-                labelEl.setAttribute('opacity', 0.2);
+                // Make labels more visible (was 0.2)
+                labelEl.setAttribute('opacity', 0.35);
             }
         });
     },

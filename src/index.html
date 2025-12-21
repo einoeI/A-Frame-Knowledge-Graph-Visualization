@@ -227,11 +227,19 @@
             visible="false"
           ></a-entity>
 
-          <!-- Info panel as HUD element (child of camera, stays in view) -->
+          <!-- Info panel for selected node (right side) -->
           <a-entity
             id="info-panel"
             info-panel="width: 0.7; height: 0.7"
-            position="0.55 -0.15 -1.2"
+            position="0.6 -0.2 -1.2"
+            visible="false"
+          ></a-entity>
+
+          <!-- Info panel for hovered node (left side) -->
+          <a-entity
+            id="hover-panel"
+            info-panel="width: 0.7; height: 0.7"
+            position="-0.6 -0.2 -1.2"
             visible="false"
           ></a-entity>
         </a-entity>
@@ -255,7 +263,7 @@
       <a-entity
         id="graph-container"
         graph-loader="src: ./lotr_positioned.json; showLabels: true"
-        graph-interaction="infoPanelId: info-panel; graphContainerId: graph-container"
+        graph-interaction="infoPanelId: info-panel; hoverPanelId: hover-panel; graphContainerId: graph-container"
         position="0 0 0"
       ></a-entity>
 

@@ -4,8 +4,8 @@
   "description": "LOTR Knowledge Graph - 2D and 3D VR Visualization",
   "homepage": "https://einoei.github.io/A-Frame-Knowledge-Graph-Visualization",
   "scripts": {
-    "start": "parcel serve ./src/index.html ./src/2d_visualization.html ./src/tutorial_3d.html ./src/tutorial_2d.html --port 8080",
-    "build": "parcel build ./src/index.html ./src/2d_visualization.html ./src/tutorial_3d.html ./src/tutorial_2d.html --public-url ./ --dist-dir ./dist",
+    "start": "npx http-server ./src -p 8080 -c-1 --cors",
+    "build": "node build.js",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
     "lint": "eslint . --ext .js --fix"
@@ -23,13 +23,10 @@
   ],
   "author": "",
   "license": "MIT",
-  "dependencies": {
-    "@vanillaes/csv": "^3.0.1"
-  },
+  "dependencies": {},
   "devDependencies": {
     "eslint": "^8.57.0",
     "gh-pages": "^6.3.0",
-    "parcel": "^2.11.0",
-    "parcel-reporter-static-files-copy": "^1.5.3"
+    "http-server": "^14.1.1"
   }
 }
