@@ -15,7 +15,8 @@ const filesToCopy = [
     '2d_visualization.html',
     'tutorial_3d.html',
     'tutorial_2d.html',
-    'lotr_positioned.json',
+    'lotr_graph.json',       // for 2D visualization
+    'lotr_positioned.json',  // for 3D visualization
     'tutorial_graph.json',
     'components'  // folder
 ];
