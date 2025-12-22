@@ -7,7 +7,7 @@
 
 /**
  * Thumbstick Movement Component (Left Controller)
- * Move forward/backward based on head direction
+ * Move in any direction based on head orientation
  */
 AFRAME.registerComponent('thumbstick-movement', {
     schema: {
@@ -18,6 +18,7 @@ AFRAME.registerComponent('thumbstick-movement', {
 
     init: function () {
         this.velocity = new THREE.Vector3();
+        this.thumbstickX = 0;
         this.thumbstickY = 0;
 
         this.onThumbstickMoved = this.onThumbstickMoved.bind(this);
@@ -25,12 +26,13 @@ AFRAME.registerComponent('thumbstick-movement', {
     },
 
     onThumbstickMoved: function (evt) {
+        this.thumbstickX = evt.detail.x;
         this.thumbstickY = evt.detail.y;
     },
 
     tick: function (time, deltaTime) {
         if (!this.data.cameraRig || !this.data.camera) return;
-        if (Math.abs(this.thumbstickY) < 0.1) return;
+        if (Math.abs(this.thumbstickX) < 0.1 && Math.abs(this.thumbstickY) < 0.1) return;
 
         const dt = deltaTime / 1000;
         const speed = this.data.speed;
@@ -43,9 +45,16 @@ AFRAME.registerComponent('thumbstick-movement', {
         forward.y = 0;
         forward.normalize();
 
-        // Move forward/backward based on thumbstick Y
+        // Get right direction from camera
+        const right = new THREE.Vector3(1, 0, 0);
+        right.applyQuaternion(camera.quaternion);
+        right.y = 0;
+        right.normalize();
+
+        // Move based on thumbstick input
         this.velocity.set(0, 0, 0);
         this.velocity.addScaledVector(forward, -this.thumbstickY * speed * dt);
+        this.velocity.addScaledVector(right, this.thumbstickX * speed * dt);
         cameraRig.position.add(this.velocity);
     },
 
