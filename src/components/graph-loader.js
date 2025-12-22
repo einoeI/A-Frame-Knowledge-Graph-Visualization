@@ -337,6 +337,99 @@ AFRAME.registerComponent('graph-loader', {
         });
     },
 
+    // Public method to show both selection (blue) and hover (white) at the same time
+    highlightWithHover: function (selectedNodeId, hoveredNodeId) {
+        const selectedNode = window.graphData.nodeMap[selectedNodeId];
+        const hoveredNode = window.graphData.nodeMap[hoveredNodeId];
+        if (!selectedNode || !hoveredNode) return;
+
+        // Get connected node IDs for selected node (blue)
+        const selectedConnectedIds = new Set([selectedNodeId]);
+        window.graphData.links.forEach(link => {
+            if (link.source === selectedNodeId) selectedConnectedIds.add(link.target);
+            if (link.target === selectedNodeId) selectedConnectedIds.add(link.source);
+        });
+
+        // Get connected node IDs for hovered node (white)
+        const hoveredConnectedIds = new Set([hoveredNodeId]);
+        window.graphData.links.forEach(link => {
+            if (link.source === hoveredNodeId) hoveredConnectedIds.add(link.target);
+            if (link.target === hoveredNodeId) hoveredConnectedIds.add(link.source);
+        });
+
+        // Update node appearances
+        Object.keys(this.nodeEntities).forEach(id => {
+            const nodeEl = this.nodeEntities[id];
+            const nodeData = window.graphData.nodeMap[id];
+
+            if (id === selectedNodeId) {
+                // Selected node - blue
+                nodeEl.setAttribute('material', 'color', HIGHLIGHT_COLOR);
+                nodeEl.setAttribute('material', 'emissive', HIGHLIGHT_COLOR);
+                nodeEl.setAttribute('material', 'emissiveIntensity', 0.3);
+                nodeEl.setAttribute('material', 'opacity', 1);
+            } else if (id === hoveredNodeId) {
+                // Hovered node - white glow
+                nodeEl.setAttribute('material', 'color', nodeData.color);
+                nodeEl.setAttribute('material', 'emissive', '#ffffff');
+                nodeEl.setAttribute('material', 'emissiveIntensity', 0.5);
+                nodeEl.setAttribute('material', 'opacity', 1);
+            } else if (selectedConnectedIds.has(id)) {
+                // Connected to selected - keep original color, full opacity
+                nodeEl.setAttribute('material', 'color', nodeData.color);
+                nodeEl.setAttribute('material', 'emissive', '#000000');
+                nodeEl.setAttribute('material', 'emissiveIntensity', 0);
+                nodeEl.setAttribute('material', 'opacity', 1);
+            } else if (hoveredConnectedIds.has(id)) {
+                // Connected to hovered - light grey glow
+                nodeEl.setAttribute('material', 'color', nodeData.color);
+                nodeEl.setAttribute('material', 'emissive', '#aaaaaa');
+                nodeEl.setAttribute('material', 'emissiveIntensity', 0.2);
+                nodeEl.setAttribute('material', 'opacity', 1);
+            } else {
+                // Not connected to either - dim
+                nodeEl.setAttribute('material', 'color', '#666666');
+                nodeEl.setAttribute('material', 'emissive', '#000000');
+                nodeEl.setAttribute('material', 'emissiveIntensity', 0);
+                nodeEl.setAttribute('material', 'opacity', 0.4);
+            }
+        });
+
+        // Update edge appearances
+        this.edgeEntities.forEach(edgeEl => {
+            const source = edgeEl.getAttribute('data-source');
+            const target = edgeEl.getAttribute('data-target');
+
+            const isSelectedEdge = (source === selectedNodeId || target === selectedNodeId);
+            const isHoveredEdge = (source === hoveredNodeId || target === hoveredNodeId);
+
+            if (isSelectedEdge) {
+                // Connected to selected - blue
+                edgeEl.setAttribute('line', 'color', HIGHLIGHT_COLOR);
+                edgeEl.setAttribute('line', 'opacity', 0.9);
+            } else if (isHoveredEdge) {
+                // Connected to hovered - white
+                edgeEl.setAttribute('line', 'color', '#ffffff');
+                edgeEl.setAttribute('line', 'opacity', 0.7);
+            } else {
+                // Not connected - dim
+                edgeEl.setAttribute('line', 'color', '#555555');
+                edgeEl.setAttribute('line', 'opacity', 0.15);
+            }
+        });
+
+        // Update label visibility
+        Object.keys(this.labelEntities).forEach(id => {
+            const labelEl = this.labelEntities[id];
+            if (selectedConnectedIds.has(id) || hoveredConnectedIds.has(id)) {
+                labelEl.setAttribute('visible', true);
+                labelEl.setAttribute('opacity', 1);
+            } else {
+                labelEl.setAttribute('opacity', 0.3);
+            }
+        });
+    },
+
     // Public method to reset highlights
     resetHighlight: function () {
         // Reset nodes

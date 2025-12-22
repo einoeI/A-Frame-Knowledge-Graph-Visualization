@@ -3,7 +3,8 @@
  * Handles hover and click interactions for graph nodes
  *
  * Hover: Shows info panel + highlights connections in white/light grey
- * Click: Highlights node and connections in blue (no info panel)
+ * Click: Highlights node and connections in blue (persistent)
+ * While clicked: Can still hover other nodes to see their connections in white
  */
 
 /* global AFRAME */
@@ -58,28 +59,16 @@ AFRAME.registerComponent('graph-interaction', {
         // Setup event listeners for all nodes
         this.setupNodeListeners();
 
-        // Bind background hover handler
-        this.onBackgroundHover = this.onBackgroundHover.bind(this);
-
-        // Setup background click and hover to reset
+        // Setup background click to reset
         const background = document.querySelector('#background');
         if (background) {
             background.addEventListener('click', this.onBackgroundClick);
-            background.addEventListener('mouseenter', this.onBackgroundHover);
         }
 
-        // Also listen to sky click and hover
+        // Also listen to sky click
         const sky = document.querySelector('a-sky');
-        if (sky) {
+        if (sky && sky !== background) {
             sky.addEventListener('click', this.onBackgroundClick);
-            sky.addEventListener('mouseenter', this.onBackgroundHover);
-        }
-    },
-
-    onBackgroundHover: function (evt) {
-        // When cursor moves to background, clear hover effects
-        if (this.hoveredNodeId) {
-            this.clearHoverEffects();
         }
     },
 
@@ -101,15 +90,18 @@ AFRAME.registerComponent('graph-interaction', {
 
         if (!nodeId) return;
 
-        // If a node is selected (clicked), don't change hover effects
-        if (this.selectedNodeId) return;
+        // Don't trigger hover on the currently selected node
+        if (this.selectedNodeId === nodeId) return;
 
         // Already hovering this node - ignore
         if (this.hoveredNodeId === nodeId) return;
 
-        // Clear previous hover if any
-        if (this.hoveredNodeId) {
-            this.clearHoverEffects();
+        // Clear previous hover if any (but keep selection)
+        if (this.hoveredNodeId && this.hoveredNodeId !== this.selectedNodeId) {
+            const prevNodeEl = this.graphLoader ? this.graphLoader.getNodeEntity(this.hoveredNodeId) : null;
+            if (prevNodeEl) {
+                prevNodeEl.setAttribute('scale', '1 1 1');
+            }
         }
 
         // Set new hover
@@ -118,12 +110,20 @@ AFRAME.registerComponent('graph-interaction', {
         // Scale up the hovered node
         nodeEl.setAttribute('scale', '1.2 1.2 1.2');
 
-        // Highlight connections in white/light grey
-        if (this.graphLoader) {
-            this.graphLoader.highlightNodeHover(nodeId);
+        // Apply appropriate highlighting
+        if (this.selectedNodeId) {
+            // Something is selected - show combined view
+            if (this.graphLoader) {
+                this.graphLoader.highlightWithHover(this.selectedNodeId, nodeId);
+            }
+        } else {
+            // Nothing selected - just show hover
+            if (this.graphLoader) {
+                this.graphLoader.highlightNodeHover(nodeId);
+            }
         }
 
-        // Show info panel
+        // Show info panel for hovered node
         this.showInfoPanel(nodeId);
     },
 
@@ -133,33 +133,28 @@ AFRAME.registerComponent('graph-interaction', {
 
         if (!nodeId) return;
 
-        // If a node is selected, don't change anything
-        if (this.selectedNodeId) return;
-
-        // Clear hover effects
+        // Clear hover effects for this node
         if (this.hoveredNodeId === nodeId) {
-            this.clearHoverEffects();
-        }
-    },
-
-    clearHoverEffects: function () {
-        if (!this.hoveredNodeId) return;
-
-        // Reset scale of hovered node
-        const nodeEl = this.graphLoader ? this.graphLoader.getNodeEntity(this.hoveredNodeId) : null;
-        if (nodeEl) {
+            // Reset scale
             nodeEl.setAttribute('scale', '1 1 1');
+
+            // Hide info panel
+            this.hideInfoPanel();
+
+            this.hoveredNodeId = null;
+
+            // Restore selection highlighting if something is selected
+            if (this.selectedNodeId) {
+                if (this.graphLoader) {
+                    this.graphLoader.highlightNode(this.selectedNodeId);
+                }
+            } else {
+                // Nothing selected - reset everything
+                if (this.graphLoader) {
+                    this.graphLoader.resetHighlight();
+                }
+            }
         }
-
-        // Reset all highlights
-        if (this.graphLoader) {
-            this.graphLoader.resetHighlight();
-        }
-
-        // Hide info panel
-        this.hideInfoPanel();
-
-        this.hoveredNodeId = null;
     },
 
     onNodeClick: function (evt) {
@@ -169,6 +164,16 @@ AFRAME.registerComponent('graph-interaction', {
         const nodeId = nodeEl.getAttribute('data-node-id');
 
         if (!nodeId) return;
+
+        // Clear any hover state
+        if (this.hoveredNodeId) {
+            const hoveredEl = this.graphLoader ? this.graphLoader.getNodeEntity(this.hoveredNodeId) : null;
+            if (hoveredEl && this.hoveredNodeId !== nodeId) {
+                hoveredEl.setAttribute('scale', '1 1 1');
+            }
+            this.hoveredNodeId = null;
+            this.hideInfoPanel();
+        }
 
         // Toggle selection
         if (this.selectedNodeId === nodeId) {
@@ -188,18 +193,6 @@ AFRAME.registerComponent('graph-interaction', {
     },
 
     selectNode: function (nodeId) {
-        // Clear any hover effects first
-        if (this.hoveredNodeId) {
-            const nodeEl = this.graphLoader ? this.graphLoader.getNodeEntity(this.hoveredNodeId) : null;
-            if (nodeEl) {
-                nodeEl.setAttribute('scale', '1 1 1');
-            }
-            this.hoveredNodeId = null;
-        }
-
-        // Hide info panel (click doesn't show info)
-        this.hideInfoPanel();
-
         // If there was a previously selected node, reset first
         if (this.selectedNodeId && this.selectedNodeId !== nodeId) {
             if (this.graphLoader) {
