@@ -203,8 +203,6 @@
     <!-- A-Frame Scene -->
     <a-scene
       background="color: #222222"
-      cursor="rayOrigin: mouse; fuse: false"
-      raycaster="objects: .raycastable, .graph-node"
       vr-mode-ui="enabled: true"
     >
       <!-- Assets -->
@@ -234,7 +232,7 @@
           <a-entity
             id="desktop-cursor"
             cursor="fuse: false; rayOrigin: mouse"
-            raycaster="far: 100; objects: .graph-node, .raycastable"
+            raycaster="far: 100; objects: .graph-node, .raycastable; precision: 0.001; interval: 0"
             position="0 0 -1"
             geometry="primitive: ring; radiusInner: 0.01; radiusOuter: 0.015"
             material="color: #8ACAE5; shader: flat; opacity: 0.8"
@@ -262,12 +260,12 @@
       <a-entity
         id="leftHand"
         laser-controls="hand: left"
-        raycaster="objects: .graph-node, .raycastable"
+        raycaster="objects: .graph-node, .raycastable; precision: 0.001"
       ></a-entity>
       <a-entity
         id="rightHand"
         laser-controls="hand: right"
-        raycaster="objects: .graph-node, .raycastable"
+        raycaster="objects: .graph-node, .raycastable; precision: 0.001"
         line="color: #8ACAE5"
       ></a-entity>
 
