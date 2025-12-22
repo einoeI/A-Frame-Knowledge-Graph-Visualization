@@ -152,9 +152,13 @@ AFRAME.registerComponent('hand-interaction', {
         if (this.hoveredNode) {
             this.hoveredNode.emit('click');
         } else {
-            const background = document.querySelector('#background');
-            if (background) {
-                background.emit('click');
+            // Reset selection when clicking empty space
+            const graphContainer = document.querySelector('#graph-container');
+            if (graphContainer && graphContainer.components['graph-interaction']) {
+                const interaction = graphContainer.components['graph-interaction'];
+                if (interaction.selectedNodeId) {
+                    interaction.deselectNode();
+                }
             }
         }
     },
