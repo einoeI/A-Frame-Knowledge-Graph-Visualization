@@ -248,23 +248,23 @@
         </a-entity>
 
         <!-- VR Hand controllers inside cameraRig for proper tracking -->
-        <!-- Left hand: forward/backward movement -->
+        <!-- Left hand: WASD-style movement -->
         <a-entity
           id="leftHand"
           laser-controls="hand: left"
           raycaster="far: 100; objects: .graph-node, .raycastable"
           hand-interaction="hand: left"
-          thumbstick-movement="speed: 4; cameraRig: #cameraRig; camera: #camera"
+          thumbstick-movement="speed: 4; cameraRig: #cameraRig"
           line="color: #8ACAE5"
         ></a-entity>
 
-        <!-- Right hand: rotation/turning -->
+        <!-- Right hand: rotation/turning (slower) -->
         <a-entity
           id="rightHand"
           laser-controls="hand: right"
           raycaster="far: 100; objects: .graph-node, .raycastable"
           hand-interaction="hand: right"
-          thumbstick-rotate="turnSpeed: 2; cameraRig: #cameraRig"
+          thumbstick-rotate="turnSpeed: 0.8; cameraRig: #cameraRig"
           line="color: #8ACAE5"
         ></a-entity>
       </a-entity>
