@@ -46,8 +46,6 @@ AFRAME.registerComponent('graph-interaction', {
     },
 
     onGraphLoaded: function (evt) {
-        console.log('[GraphInteraction] Graph loaded, setting up interactions');
-
         // Get reference to graph-loader component
         const graphContainer = document.getElementById(this.data.graphContainerId);
         if (graphContainer) {
@@ -83,8 +81,6 @@ AFRAME.registerComponent('graph-interaction', {
             nodeEl.addEventListener('mouseleave', this.onNodeMouseLeave);
             nodeEl.addEventListener('click', this.onNodeClick);
         });
-
-        console.log('[GraphInteraction] Set up listeners for', nodes.length, 'nodes');
     },
 
     onBackgroundHover: function (evt) {
@@ -356,5 +352,3 @@ AFRAME.registerComponent('graph-interaction', {
         }
     }
 });
-
-console.log('[GraphInteraction] Component registered');

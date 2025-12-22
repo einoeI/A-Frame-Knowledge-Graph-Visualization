@@ -267,14 +267,12 @@
 
         if (graphContainer) {
           graphContainer.addEventListener('graph-loaded', function(evt) {
-            console.log('Graph loaded:', evt.detail);
             if (loadingEl) {
               loadingEl.classList.add('hidden');
             }
           });
 
           graphContainer.addEventListener('graph-error', function(evt) {
-            console.error('Graph error:', evt.detail);
             if (loadingEl) {
               loadingEl.innerHTML = '<h2>Error Loading Graph</h2><p>' + evt.detail.error + '</p>';
             }
@@ -282,17 +280,13 @@
         }
       });
 
-      // Log when VR mode changes
+      // Hide HTML overlays in VR mode
       document.querySelector('a-scene').addEventListener('enter-vr', function() {
-        console.log('Entered VR mode');
-        // Hide HTML overlays in VR
         document.getElementById('instructions').style.display = 'none';
         document.getElementById('legend').style.display = 'none';
       });
 
       document.querySelector('a-scene').addEventListener('exit-vr', function() {
-        console.log('Exited VR mode');
-        // Show HTML overlays again
         document.getElementById('instructions').style.display = 'block';
         document.getElementById('legend').style.display = 'block';
       });
