@@ -60,6 +60,7 @@ typings/
 # next.js build output
 .next
 
-# Claude Code specific files
+# Local development notes
 CLAUDE.md
+claude.md
 docs/

@@ -58,10 +58,7 @@ AFRAME.registerComponent('graph-loader', {
 
     loadGraph: async function () {
         try {
-            // Add cache-busting parameter to prevent stale data
             const url = this.data.src + '?v=' + Date.now();
-            console.log('[GraphLoader] Loading graph from:', this.data.src);
-
             const response = await fetch(url);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -80,10 +77,6 @@ AFRAME.registerComponent('graph-loader', {
                 window.graphData.nodeMap[node.id] = node;
             });
 
-            console.log('[GraphLoader] Loaded:', data.metadata);
-            console.log('[GraphLoader] Nodes:', data.nodes.length);
-            console.log('[GraphLoader] Edges:', data.links.length);
-
             // Create graph elements
             this.createNodes(data.nodes);
             this.createEdges(data.links, data.nodes);
@@ -95,7 +88,6 @@ AFRAME.registerComponent('graph-loader', {
             });
 
         } catch (error) {
-            console.error('[GraphLoader] Error loading graph:', error);
             this.el.emit('graph-error', { error: error.message });
         }
     },
@@ -162,8 +154,6 @@ AFRAME.registerComponent('graph-loader', {
                 this.createLabel(node, nodeEl, nodeSize);
             }
         });
-
-        console.log('[GraphLoader] Created', Object.keys(this.nodeEntities).length, 'nodes');
     },
 
     createLabel: function (node, parentEl, nodeSize) {
@@ -200,7 +190,6 @@ AFRAME.registerComponent('graph-loader', {
             const targetNode = nodeMap[link.target];
 
             if (!sourceNode || !targetNode) {
-                console.warn('[GraphLoader] Missing node for edge:', link);
                 return;
             }
 
@@ -224,8 +213,6 @@ AFRAME.registerComponent('graph-loader', {
             this.edgeEntities.push(edgeEl);
             container.appendChild(edgeEl);
         });
-
-        console.log('[GraphLoader] Created', this.edgeEntities.length, 'edges');
     },
 
     // Public method to highlight a node on hover (light grey/white)
@@ -477,5 +464,3 @@ AFRAME.registerComponent('graph-loader', {
         return this.edgeEntities;
     }
 });
-
-console.log('[GraphLoader] Component registered');

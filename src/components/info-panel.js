@@ -141,5 +141,3 @@ AFRAME.registerComponent('info-panel', {
         parent.appendChild(valueText);
     }
 });
-
-console.log('[InfoPanel] Component registered');
