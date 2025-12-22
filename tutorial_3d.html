@@ -171,9 +171,9 @@
       </ul>
       <h3 style="margin-top: 12px;">VR Controls</h3>
       <ul>
-        <li><strong>VR Button</strong> - Enter VR mode</li>
-        <li><strong>Look at node</strong> - View character info</li>
-        <li><strong>Trigger</strong> - Highlight connections</li>
+        <li><strong>Thumbstick</strong> - Fly around</li>
+        <li><strong>Point laser</strong> - Aim at characters</li>
+        <li><strong>Trigger</strong> - Select character</li>
       </ul>
     </div>
 
@@ -238,36 +238,36 @@
             material="color: #8ACAE5; shader: flat; opacity: 0.8"
           ></a-entity>
 
-          <!-- VR Gaze cursor -->
-          <a-entity
-            id="vr-gaze-cursor"
-            gaze-cursor="cursorColor: #8ACAE5"
-            raycaster="far: 100; objects: .graph-node"
-            visible="false"
-          ></a-entity>
-
-          <!-- Info panel (shown on hover only) -->
+          <!-- Info panel (shown on hover) - positioned further back for VR visibility -->
           <a-entity
             id="info-panel"
-            info-panel="width: 0.7; height: 0.7"
-            position="0.55 -0.15 -1.2"
+            info-panel="width: 0.8; height: 0.8"
+            position="0.7 -0.1 -2.0"
             visible="false"
           ></a-entity>
         </a-entity>
       </a-entity>
 
-      <!-- VR Hand controllers -->
+      <!-- VR Hand controllers with interaction and movement -->
       <a-entity
         id="leftHand"
         laser-controls="hand: left"
-        raycaster="objects: .graph-node, .raycastable"
+        raycaster="far: 100; objects: .graph-node, .raycastable"
+        hand-interaction="hand: left"
+        thumbstick-movement="speed: 4; cameraRig: #cameraRig; camera: #camera"
+        line="color: #8ACAE5"
       ></a-entity>
       <a-entity
         id="rightHand"
         laser-controls="hand: right"
-        raycaster="objects: .graph-node, .raycastable"
+        raycaster="far: 100; objects: .graph-node, .raycastable"
+        hand-interaction="hand: right"
+        thumbstick-movement="speed: 4; cameraRig: #cameraRig; camera: #camera"
         line="color: #8ACAE5"
       ></a-entity>
+
+      <!-- VR Boundary for spatial awareness -->
+      <a-entity id="vr-boundary" vr-boundary="size: 20; divisions: 10; color: #3A7575"></a-entity>
 
       <!-- Graph container - loads tutorial graph -->
       <a-entity

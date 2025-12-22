@@ -1,242 +1,166 @@
 /**
  * VR Controls Component for A-Frame
- * Provides enhanced VR interaction: gaze cursor, teleportation, comfort options
+ * Joystick movement, hand controller interaction, no gaze
  */
 
 /* global AFRAME, THREE */
 
 /**
- * Gaze Cursor Component
- * Provides hands-free interaction via gaze with dwell time
+ * Thumbstick Movement Component
+ * Fly around using controller thumbsticks, direction based on head orientation
  */
-AFRAME.registerComponent('gaze-cursor', {
+AFRAME.registerComponent('thumbstick-movement', {
     schema: {
-        fuseTimeout: { type: 'number', default: 1500 },  // Time to trigger click (ms)
-        cursorColor: { type: 'color', default: '#8ACAE5' },
-        cursorColorHover: { type: 'color', default: '#046de7' },
-        cursorScale: { type: 'number', default: 0.02 },
-        distance: { type: 'number', default: 2 }
+        speed: { type: 'number', default: 3 },
+        cameraRig: { type: 'selector', default: '#cameraRig' },
+        camera: { type: 'selector', default: '#camera' }
     },
 
     init: function () {
-        this.isHovering = false;
-        this.hoverStartTime = 0;
-        this.hoverTarget = null;
-        this.fuseProgress = 0;
-        this.isVRMode = false;  // Only active in VR mode
-
-        // Create cursor geometry
-        this.createCursor();
+        this.velocity = new THREE.Vector3();
+        this.direction = new THREE.Vector3();
 
         // Bind handlers
-        this.onIntersection = this.onIntersection.bind(this);
-        this.onIntersectionCleared = this.onIntersectionCleared.bind(this);
-        this.onEnterVR = this.onEnterVR.bind(this);
-        this.onExitVR = this.onExitVR.bind(this);
+        this.onThumbstickMoved = this.onThumbstickMoved.bind(this);
 
-        // Listen for raycaster events
-        this.el.addEventListener('raycaster-intersection', this.onIntersection);
-        this.el.addEventListener('raycaster-intersection-cleared', this.onIntersectionCleared);
+        // Track thumbstick state
+        this.thumbstickX = 0;
+        this.thumbstickY = 0;
 
-        // Listen for VR mode changes
-        this.el.sceneEl.addEventListener('enter-vr', this.onEnterVR);
-        this.el.sceneEl.addEventListener('exit-vr', this.onExitVR);
+        // Listen for thumbstick events on this controller
+        this.el.addEventListener('thumbstickmoved', this.onThumbstickMoved);
     },
 
-    onEnterVR: function () {
-        this.isVRMode = true;
-        this.el.setAttribute('visible', true);
+    onThumbstickMoved: function (evt) {
+        this.thumbstickX = evt.detail.x;
+        this.thumbstickY = evt.detail.y;
     },
 
-    onExitVR: function () {
-        this.isVRMode = false;
-        this.el.setAttribute('visible', false);
-        // Reset any ongoing hover
-        if (this.hoverTarget) {
-            this.onIntersectionCleared();
-        }
-    },
+    tick: function (time, deltaTime) {
+        if (!this.data.cameraRig || !this.data.camera) return;
 
-    createCursor: function () {
-        // Simple center dot cursor (no progress ring - we don't auto-click)
-        this.centerDot = document.createElement('a-circle');
-        this.centerDot.setAttribute('radius', this.data.cursorScale * 0.4);
-        this.centerDot.setAttribute('color', this.data.cursorColor);
-        this.centerDot.setAttribute('position', `0 0 -${this.data.distance}`);
-        this.centerDot.setAttribute('material', 'shader: flat; side: double');
-        this.el.appendChild(this.centerDot);
-
-        // Outer ring (just for visibility, not progress)
-        this.progressRing = document.createElement('a-ring');
-        this.progressRing.setAttribute('radius-inner', this.data.cursorScale * 0.5);
-        this.progressRing.setAttribute('radius-outer', this.data.cursorScale * 0.7);
-        this.progressRing.setAttribute('color', this.data.cursorColor);
-        this.progressRing.setAttribute('opacity', 0.5);
-        this.progressRing.setAttribute('position', `0 0 -${this.data.distance}`);
-        this.progressRing.setAttribute('material', 'shader: flat; side: double');
-        this.el.appendChild(this.progressRing);
-    },
-
-    onIntersection: function (evt) {
-        // Only process in VR mode
-        if (!this.isVRMode) return;
-
-        const intersectedEl = evt.detail.els[0];
-        if (!intersectedEl || !intersectedEl.classList.contains('graph-node')) return;
-
-        if (this.hoverTarget !== intersectedEl) {
-            this.hoverTarget = intersectedEl;
-            this.hoverStartTime = Date.now();
-            this.isHovering = true;
-
-            // Change cursor color
-            this.centerDot.setAttribute('color', this.data.cursorColorHover);
-            this.progressRing.setAttribute('color', this.data.cursorColorHover);
-
-            // Emit hover event
-            intersectedEl.emit('mouseenter');
-        }
-    },
-
-    onIntersectionCleared: function (evt) {
-        if (this.hoverTarget) {
-            this.hoverTarget.emit('mouseleave');
+        // Only move if thumbstick is being used
+        if (Math.abs(this.thumbstickX) < 0.1 && Math.abs(this.thumbstickY) < 0.1) {
+            return;
         }
 
-        this.isHovering = false;
-        this.hoverTarget = null;
+        const dt = deltaTime / 1000; // Convert to seconds
+        const speed = this.data.speed;
 
-        // Reset cursor color
-        this.centerDot.setAttribute('color', this.data.cursorColor);
-        this.progressRing.setAttribute('color', this.data.cursorColor);
-    },
+        // Get camera world direction (where user is looking)
+        const camera = this.data.camera.object3D;
+        const cameraRig = this.data.cameraRig.object3D;
 
-    tick: function () {
-        // VR gaze cursor now works like desktop hover:
-        // - Looking at a node shows info panel (via mouseenter event)
-        // - Clicking requires manual controller trigger
-        // - No auto-click/fuse behavior
-        // Progress ring is hidden since we don't auto-click
+        // Get forward direction from camera
+        const forward = new THREE.Vector3(0, 0, -1);
+        forward.applyQuaternion(camera.quaternion);
+        forward.y = 0; // Keep movement horizontal for comfort
+        forward.normalize();
+
+        // Get right direction
+        const right = new THREE.Vector3(1, 0, 0);
+        right.applyQuaternion(camera.quaternion);
+        right.y = 0;
+        right.normalize();
+
+        // Calculate movement vector
+        // thumbstickY negative = forward, positive = backward
+        // thumbstickX positive = right, negative = left
+        this.velocity.set(0, 0, 0);
+        this.velocity.addScaledVector(forward, -this.thumbstickY * speed * dt);
+        this.velocity.addScaledVector(right, this.thumbstickX * speed * dt);
+
+        // Apply movement to camera rig
+        cameraRig.position.add(this.velocity);
     },
 
     remove: function () {
-        this.el.removeEventListener('raycaster-intersection', this.onIntersection);
-        this.el.removeEventListener('raycaster-intersection-cleared', this.onIntersectionCleared);
-        this.el.sceneEl.removeEventListener('enter-vr', this.onEnterVR);
-        this.el.sceneEl.removeEventListener('exit-vr', this.onExitVR);
+        this.el.removeEventListener('thumbstickmoved', this.onThumbstickMoved);
     }
 });
 
 
 /**
- * Simple Teleport Component
- * Click on floor/ground to teleport
+ * Hand Interaction Component
+ * Makes hand controllers work for hover and click on nodes
  */
-AFRAME.registerComponent('teleport-controls', {
+AFRAME.registerComponent('hand-interaction', {
     schema: {
-        cameraRig: { type: 'selector', default: '#cameraRig' },
-        button: { type: 'string', default: 'trigger' },
-        enabled: { type: 'boolean', default: true }
+        hand: { type: 'string', default: 'right' }
     },
 
     init: function () {
-        this.isAiming = false;
-        this.targetPosition = new THREE.Vector3();
-
-        // Create teleport marker
-        this.createMarker();
+        this.hoveredNode = null;
 
         // Bind handlers
-        this.onButtonDown = this.onButtonDown.bind(this);
-        this.onButtonUp = this.onButtonUp.bind(this);
+        this.onIntersection = this.onIntersection.bind(this);
+        this.onIntersectionCleared = this.onIntersectionCleared.bind(this);
+        this.onTriggerDown = this.onTriggerDown.bind(this);
 
-        // Listen for controller events
-        this.el.addEventListener('triggerdown', this.onButtonDown);
-        this.el.addEventListener('triggerup', this.onButtonUp);
-        this.el.addEventListener('gripdown', this.onButtonDown);
-        this.el.addEventListener('gripup', this.onButtonUp);
+        // Listen for raycaster events
+        this.el.addEventListener('raycaster-intersection', this.onIntersection);
+        this.el.addEventListener('raycaster-intersection-cleared', this.onIntersectionCleared);
+
+        // Listen for trigger
+        this.el.addEventListener('triggerdown', this.onTriggerDown);
+        this.el.addEventListener('gripdown', this.onTriggerDown);
     },
 
-    createMarker: function () {
-        this.marker = document.createElement('a-entity');
+    onIntersection: function (evt) {
+        const intersectedEls = evt.detail.els;
 
-        // Ring on ground
-        const ring = document.createElement('a-ring');
-        ring.setAttribute('radius-inner', 0.4);
-        ring.setAttribute('radius-outer', 0.5);
-        ring.setAttribute('color', '#8ACAE5');
-        ring.setAttribute('rotation', '-90 0 0');
-        ring.setAttribute('material', 'shader: flat; opacity: 0.8');
-        this.marker.appendChild(ring);
+        // Find the first graph node
+        for (let i = 0; i < intersectedEls.length; i++) {
+            const el = intersectedEls[i];
+            if (el.classList.contains('graph-node')) {
+                if (this.hoveredNode !== el) {
+                    // Leave previous node
+                    if (this.hoveredNode) {
+                        this.hoveredNode.emit('mouseleave');
+                    }
+                    // Enter new node
+                    this.hoveredNode = el;
+                    el.emit('mouseenter');
+                }
+                return;
+            }
+        }
 
-        // Center circle
-        const center = document.createElement('a-circle');
-        center.setAttribute('radius', 0.3);
-        center.setAttribute('color', '#8ACAE5');
-        center.setAttribute('rotation', '-90 0 0');
-        center.setAttribute('material', 'shader: flat; opacity: 0.5');
-        this.marker.appendChild(center);
-
-        this.marker.setAttribute('visible', false);
-        this.el.sceneEl.appendChild(this.marker);
-    },
-
-    onButtonDown: function (evt) {
-        if (!this.data.enabled) return;
-        this.isAiming = true;
-    },
-
-    onButtonUp: function (evt) {
-        if (!this.data.enabled || !this.isAiming) return;
-        this.isAiming = false;
-        this.marker.setAttribute('visible', false);
-
-        // Perform teleport
-        if (this.data.cameraRig && this.targetPosition) {
-            const rig = this.data.cameraRig;
-            rig.setAttribute('position', {
-                x: this.targetPosition.x,
-                y: rig.getAttribute('position').y,  // Keep same height
-                z: this.targetPosition.z
-            });
+        // No graph node found, clear hover
+        if (this.hoveredNode) {
+            this.hoveredNode.emit('mouseleave');
+            this.hoveredNode = null;
         }
     },
 
-    tick: function () {
-        if (!this.isAiming) return;
+    onIntersectionCleared: function (evt) {
+        // Check if the cleared element was our hovered node
+        const clearedEl = evt.detail.clearedEls ? evt.detail.clearedEls[0] : null;
 
-        // Raycast to find teleport position
-        const raycaster = this.el.components.raycaster;
-        if (!raycaster) return;
+        if (this.hoveredNode && (!clearedEl || clearedEl === this.hoveredNode)) {
+            this.hoveredNode.emit('mouseleave');
+            this.hoveredNode = null;
+        }
+    },
 
-        const intersections = raycaster.intersections;
-        if (intersections.length > 0) {
-            // Find a valid teleport surface (floor, ground, or open space)
-            for (let i = 0; i < intersections.length; i++) {
-                const intersection = intersections[i];
-
-                // Use the intersection point
-                this.targetPosition.copy(intersection.point);
-                this.marker.setAttribute('position', this.targetPosition);
-                this.marker.setAttribute('visible', true);
-                break;
-            }
+    onTriggerDown: function (evt) {
+        if (this.hoveredNode) {
+            this.hoveredNode.emit('click');
         }
     },
 
     remove: function () {
-        this.el.removeEventListener('triggerdown', this.onButtonDown);
-        this.el.removeEventListener('triggerup', this.onButtonUp);
-        if (this.marker && this.marker.parentNode) {
-            this.marker.parentNode.removeChild(this.marker);
-        }
+        this.el.removeEventListener('raycaster-intersection', this.onIntersection);
+        this.el.removeEventListener('raycaster-intersection-cleared', this.onIntersectionCleared);
+        this.el.removeEventListener('triggerdown', this.onTriggerDown);
+        this.el.removeEventListener('gripdown', this.onTriggerDown);
     }
 });
 
 
 /**
  * VR Mode Handler
- * Adjusts controls and UI based on VR vs desktop mode
+ * Adjusts controls based on VR vs desktop mode
  */
 AFRAME.registerComponent('vr-mode-handler', {
     init: function () {
@@ -248,19 +172,17 @@ AFRAME.registerComponent('vr-mode-handler', {
     },
 
     onEnterVR: function () {
-        // Enable gaze cursor if no controllers detected
-        const gazeCursor = document.querySelector('[gaze-cursor]');
-        if (gazeCursor) {
-            gazeCursor.setAttribute('gaze-cursor', 'fuseTimeout', 1500);
-        }
-
-        // Disable WASD in VR (use controllers instead)
+        // Disable WASD in VR (use thumbsticks instead)
         const camera = document.querySelector('[wasd-controls]');
         if (camera) {
             camera.setAttribute('wasd-controls', 'enabled', false);
         }
 
-        // No scaling needed - panels are already sized appropriately
+        // Show VR info panel
+        const infoPanel = document.querySelector('#info-panel');
+        if (infoPanel) {
+            infoPanel.setAttribute('visible', false);
+        }
     },
 
     onExitVR: function () {
@@ -279,55 +201,79 @@ AFRAME.registerComponent('vr-mode-handler', {
 
 
 /**
- * Comfort Vignette Component
- * Reduces motion sickness by adding vignette during movement
+ * VR Boundary Component
+ * Creates a visual boundary grid for spatial awareness
  */
-AFRAME.registerComponent('comfort-vignette', {
+AFRAME.registerComponent('vr-boundary', {
     schema: {
-        enabled: { type: 'boolean', default: true },
-        intensity: { type: 'number', default: 0.5 }
+        size: { type: 'number', default: 40 },
+        divisions: { type: 'number', default: 20 },
+        color: { type: 'color', default: '#3A7575' }
     },
 
     init: function () {
-        if (!this.data.enabled) return;
-
-        // Create vignette overlay
-        this.vignette = document.createElement('a-entity');
-        this.vignette.setAttribute('geometry', {
-            primitive: 'ring',
-            radiusInner: 0.3,
-            radiusOuter: 0.6
-        });
-        this.vignette.setAttribute('material', {
-            color: 'black',
-            shader: 'flat',
-            opacity: 0,
-            transparent: true,
-            side: 'double'
-        });
-        this.vignette.setAttribute('position', '0 0 -0.5');
-        this.el.appendChild(this.vignette);
-
-        this.lastPosition = new THREE.Vector3();
-        this.isMoving = false;
+        this.createBoundary();
     },
 
-    tick: function () {
-        if (!this.data.enabled || !this.vignette) return;
+    createBoundary: function () {
+        const size = this.data.size;
+        const divisions = this.data.divisions;
+        const color = this.data.color;
 
-        const position = this.el.object3D.position;
-        const moved = position.distanceTo(this.lastPosition) > 0.01;
+        // Floor grid
+        const floorGrid = document.createElement('a-entity');
+        floorGrid.setAttribute('id', 'floor-grid');
+        floorGrid.setAttribute('position', '0 0 0');
 
-        if (moved && !this.isMoving) {
-            // Started moving - fade in vignette
-            this.isMoving = true;
-            this.vignette.setAttribute('material', 'opacity', this.data.intensity);
-        } else if (!moved && this.isMoving) {
-            // Stopped moving - fade out vignette
-            this.isMoving = false;
-            this.vignette.setAttribute('material', 'opacity', 0);
-        }
+        // Create grid lines using thin boxes
+        const spacing = size / divisions;
+        const halfSize = size / 2;
 
-        this.lastPosition.copy(position);
+        // Create a grid helper using Three.js
+        const gridHelper = new THREE.GridHelper(size, divisions, color, color);
+        gridHelper.material.opacity = 0.3;
+        gridHelper.material.transparent = true;
+
+        floorGrid.setObject3D('grid', gridHelper);
+        this.el.appendChild(floorGrid);
+
+        // Create boundary walls (transparent, just for reference)
+        const wallHeight = 15;
+        const wallOpacity = 0.05;
+
+        // Front wall
+        this.createWall(0, wallHeight/2, -halfSize, size, wallHeight, 0, color, wallOpacity);
+        // Back wall
+        this.createWall(0, wallHeight/2, halfSize, size, wallHeight, 0, color, wallOpacity);
+        // Left wall
+        this.createWall(-halfSize, wallHeight/2, 0, size, wallHeight, 90, color, wallOpacity);
+        // Right wall
+        this.createWall(halfSize, wallHeight/2, 0, size, wallHeight, 90, color, wallOpacity);
+
+        // Corner pillars for better depth perception
+        this.createPillar(-halfSize, 0, -halfSize, wallHeight, color);
+        this.createPillar(halfSize, 0, -halfSize, wallHeight, color);
+        this.createPillar(-halfSize, 0, halfSize, wallHeight, color);
+        this.createPillar(halfSize, 0, halfSize, wallHeight, color);
+    },
+
+    createWall: function (x, y, z, width, height, rotationY, color, opacity) {
+        const wall = document.createElement('a-plane');
+        wall.setAttribute('position', `${x} ${y} ${z}`);
+        wall.setAttribute('width', width);
+        wall.setAttribute('height', height);
+        wall.setAttribute('rotation', `0 ${rotationY} 0`);
+        wall.setAttribute('material', `color: ${color}; opacity: ${opacity}; transparent: true; side: double`);
+        this.el.appendChild(wall);
+    },
+
+    createPillar: function (x, y, z, height, color) {
+        const pillar = document.createElement('a-box');
+        pillar.setAttribute('position', `${x} ${y + height/2} ${z}`);
+        pillar.setAttribute('width', 0.2);
+        pillar.setAttribute('height', height);
+        pillar.setAttribute('depth', 0.2);
+        pillar.setAttribute('material', `color: ${color}; opacity: 0.5; transparent: true`);
+        this.el.appendChild(pillar);
     }
 });
