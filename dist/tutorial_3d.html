@@ -246,25 +246,28 @@
             visible="false"
           ></a-entity>
         </a-entity>
-      </a-entity>
 
-      <!-- VR Hand controllers with interaction and movement -->
-      <a-entity
-        id="leftHand"
-        laser-controls="hand: left"
-        raycaster="far: 100; objects: .graph-node, .raycastable"
-        hand-interaction="hand: left"
-        thumbstick-movement="speed: 4; cameraRig: #cameraRig; camera: #camera"
-        line="color: #8ACAE5"
-      ></a-entity>
-      <a-entity
-        id="rightHand"
-        laser-controls="hand: right"
-        raycaster="far: 100; objects: .graph-node, .raycastable"
-        hand-interaction="hand: right"
-        thumbstick-movement="speed: 4; cameraRig: #cameraRig; camera: #camera"
-        line="color: #8ACAE5"
-      ></a-entity>
+        <!-- VR Hand controllers inside cameraRig for proper tracking -->
+        <!-- Left hand: forward/backward movement -->
+        <a-entity
+          id="leftHand"
+          laser-controls="hand: left"
+          raycaster="far: 100; objects: .graph-node, .raycastable"
+          hand-interaction="hand: left"
+          thumbstick-movement="speed: 4; cameraRig: #cameraRig; camera: #camera"
+          line="color: #8ACAE5"
+        ></a-entity>
+
+        <!-- Right hand: rotation/turning -->
+        <a-entity
+          id="rightHand"
+          laser-controls="hand: right"
+          raycaster="far: 100; objects: .graph-node, .raycastable"
+          hand-interaction="hand: right"
+          thumbstick-rotate="turnSpeed: 2; cameraRig: #cameraRig"
+          line="color: #8ACAE5"
+        ></a-entity>
+      </a-entity>
 
       <!-- VR Boundary for spatial awareness -->
       <a-entity id="vr-boundary" vr-boundary="size: 20; divisions: 10; color: #3A7575"></a-entity>
