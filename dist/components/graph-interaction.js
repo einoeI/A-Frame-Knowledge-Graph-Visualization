@@ -3,8 +3,8 @@
  * Handles hover and click interactions for graph nodes
  *
  * Hover: Shows info panel + highlights connections in white/light grey
- * Click: Highlights node and connections in blue (persistent)
- * While clicked: Can still hover other nodes to see their connections in white
+ * Click: Highlights node and connections in blue (persistent, no info panel)
+ * While clicked: Can hover other nodes to see their connections in white/grey
  */
 
 /* global AFRAME */
@@ -38,6 +38,7 @@ AFRAME.registerComponent('graph-interaction', {
         this.onNodeMouseLeave = this.onNodeMouseLeave.bind(this);
         this.onNodeClick = this.onNodeClick.bind(this);
         this.onBackgroundClick = this.onBackgroundClick.bind(this);
+        this.onBackgroundHover = this.onBackgroundHover.bind(this);
         this.onGraphLoaded = this.onGraphLoaded.bind(this);
 
         // Wait for graph to load
@@ -59,16 +60,18 @@ AFRAME.registerComponent('graph-interaction', {
         // Setup event listeners for all nodes
         this.setupNodeListeners();
 
-        // Setup background click to reset
+        // Setup background click and hover to reset
         const background = document.querySelector('#background');
         if (background) {
             background.addEventListener('click', this.onBackgroundClick);
+            background.addEventListener('mouseenter', this.onBackgroundHover);
         }
 
-        // Also listen to sky click
+        // Also listen to sky click and hover
         const sky = document.querySelector('a-sky');
-        if (sky && sky !== background) {
+        if (sky) {
             sky.addEventListener('click', this.onBackgroundClick);
+            sky.addEventListener('mouseenter', this.onBackgroundHover);
         }
     },
 
@@ -84,19 +87,45 @@ AFRAME.registerComponent('graph-interaction', {
         console.log('[GraphInteraction] Set up listeners for', nodes.length, 'nodes');
     },
 
+    onBackgroundHover: function (evt) {
+        // When cursor moves to background, clear hover effects
+        if (this.hoveredNodeId) {
+            // Reset the hovered node's scale
+            const nodeEl = this.graphLoader ? this.graphLoader.getNodeEntity(this.hoveredNodeId) : null;
+            if (nodeEl) {
+                nodeEl.setAttribute('scale', '1 1 1');
+            }
+            this.hoveredNodeId = null;
+        }
+
+        // Hide info panel
+        this.hideInfoPanel();
+
+        // Restore selection highlight if something is selected, otherwise reset all
+        if (this.selectedNodeId) {
+            if (this.graphLoader) {
+                this.graphLoader.highlightNode(this.selectedNodeId);
+            }
+        } else {
+            if (this.graphLoader) {
+                this.graphLoader.resetHighlight();
+            }
+        }
+    },
+
     onNodeMouseEnter: function (evt) {
         const nodeEl = evt.target;
         const nodeId = nodeEl.getAttribute('data-node-id');
 
         if (!nodeId) return;
 
-        // Don't trigger hover on the currently selected node
-        if (this.selectedNodeId === nodeId) return;
-
-        // Already hovering this node - ignore
+        // Don't re-trigger if already hovering this node
         if (this.hoveredNodeId === nodeId) return;
 
-        // Clear previous hover if any (but keep selection)
+        // Don't apply hover effects to the selected node itself
+        if (this.selectedNodeId === nodeId) return;
+
+        // Reset previous hovered node's scale (if different from selected)
         if (this.hoveredNodeId && this.hoveredNodeId !== this.selectedNodeId) {
             const prevNodeEl = this.graphLoader ? this.graphLoader.getNodeEntity(this.hoveredNodeId) : null;
             if (prevNodeEl) {
@@ -110,14 +139,14 @@ AFRAME.registerComponent('graph-interaction', {
         // Scale up the hovered node
         nodeEl.setAttribute('scale', '1.2 1.2 1.2');
 
-        // Apply appropriate highlighting
+        // Apply highlighting based on whether something is selected
         if (this.selectedNodeId) {
-            // Something is selected - show combined view
+            // Something is selected - show both blue (selected) and white (hovered)
             if (this.graphLoader) {
                 this.graphLoader.highlightWithHover(this.selectedNodeId, nodeId);
             }
         } else {
-            // Nothing selected - just show hover
+            // Nothing selected - just show hover highlight (white/grey)
             if (this.graphLoader) {
                 this.graphLoader.highlightNodeHover(nodeId);
             }
@@ -133,26 +162,28 @@ AFRAME.registerComponent('graph-interaction', {
 
         if (!nodeId) return;
 
-        // Clear hover effects for this node
-        if (this.hoveredNodeId === nodeId) {
-            // Reset scale
-            nodeEl.setAttribute('scale', '1 1 1');
+        // Only process if this was the hovered node
+        if (this.hoveredNodeId !== nodeId) return;
 
-            // Hide info panel
-            this.hideInfoPanel();
+        // Reset scale
+        nodeEl.setAttribute('scale', '1 1 1');
 
-            this.hoveredNodeId = null;
+        // Clear hover tracking
+        this.hoveredNodeId = null;
 
-            // Restore selection highlighting if something is selected
-            if (this.selectedNodeId) {
-                if (this.graphLoader) {
-                    this.graphLoader.highlightNode(this.selectedNodeId);
-                }
-            } else {
-                // Nothing selected - reset everything
-                if (this.graphLoader) {
-                    this.graphLoader.resetHighlight();
-                }
+        // Hide info panel
+        this.hideInfoPanel();
+
+        // Restore state based on selection
+        if (this.selectedNodeId) {
+            // Restore selection highlight
+            if (this.graphLoader) {
+                this.graphLoader.highlightNode(this.selectedNodeId);
+            }
+        } else {
+            // Reset everything
+            if (this.graphLoader) {
+                this.graphLoader.resetHighlight();
             }
         }
     },
@@ -165,15 +196,15 @@ AFRAME.registerComponent('graph-interaction', {
 
         if (!nodeId) return;
 
-        // Clear any hover state
+        // Clear hover state
         if (this.hoveredNodeId) {
             const hoveredEl = this.graphLoader ? this.graphLoader.getNodeEntity(this.hoveredNodeId) : null;
-            if (hoveredEl && this.hoveredNodeId !== nodeId) {
+            if (hoveredEl) {
                 hoveredEl.setAttribute('scale', '1 1 1');
             }
             this.hoveredNodeId = null;
-            this.hideInfoPanel();
         }
+        this.hideInfoPanel();
 
         // Toggle selection
         if (this.selectedNodeId === nodeId) {
@@ -315,6 +346,13 @@ AFRAME.registerComponent('graph-interaction', {
         const background = document.querySelector('#background');
         if (background) {
             background.removeEventListener('click', this.onBackgroundClick);
+            background.removeEventListener('mouseenter', this.onBackgroundHover);
+        }
+
+        const sky = document.querySelector('a-sky');
+        if (sky) {
+            sky.removeEventListener('click', this.onBackgroundClick);
+            sky.removeEventListener('mouseenter', this.onBackgroundHover);
         }
     }
 });
