@@ -145,7 +145,14 @@ AFRAME.registerComponent('hand-interaction', {
 
     onTriggerDown: function (evt) {
         if (this.hoveredNode) {
+            // Click on hovered node
             this.hoveredNode.emit('click');
+        } else {
+            // Click on background to reset selection
+            const background = document.querySelector('#background');
+            if (background) {
+                background.emit('click');
+            }
         }
     },
 
