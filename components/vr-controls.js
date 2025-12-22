@@ -248,8 +248,6 @@ AFRAME.registerComponent('vr-mode-handler', {
     },
 
     onEnterVR: function () {
-        console.log('[VRModeHandler] Entered VR mode');
-
         // Enable gaze cursor if no controllers detected
         const gazeCursor = document.querySelector('[gaze-cursor]');
         if (gazeCursor) {
@@ -266,8 +264,6 @@ AFRAME.registerComponent('vr-mode-handler', {
     },
 
     onExitVR: function () {
-        console.log('[VRModeHandler] Exited VR mode');
-
         // Re-enable WASD for desktop
         const camera = document.querySelector('[wasd-controls]');
         if (camera) {
@@ -335,5 +331,3 @@ AFRAME.registerComponent('comfort-vignette', {
         this.lastPosition.copy(position);
     }
 });
-
-console.log('[VRControls] Components registered: gaze-cursor, teleport-controls, vr-mode-handler, comfort-vignette');
