@@ -85,24 +85,24 @@ AFRAME.registerComponent('graph-interaction', {
 
     onBackgroundHover: function (evt) {
         // When cursor moves to background, clear hover effects
-        if (this.hoveredNodeId) {
-            // Reset the hovered node's scale
+        if (this.hoveredNodeId && this.hoveredNodeId !== this.selectedNodeId) {
+            // Reset the hovered node's scale (but not selected node)
             const nodeEl = this.graphLoader ? this.graphLoader.getNodeEntity(this.hoveredNodeId) : null;
             if (nodeEl) {
                 nodeEl.setAttribute('scale', '1 1 1');
             }
-            this.hoveredNodeId = null;
         }
+        this.hoveredNodeId = null;
 
-        // Hide info panel
-        this.hideInfoPanel();
-
-        // Restore selection highlight if something is selected, otherwise reset all
+        // Restore selection highlight and show selected node's info
         if (this.selectedNodeId) {
+            this.showInfoPanel(this.selectedNodeId);
             if (this.graphLoader) {
                 this.graphLoader.highlightNode(this.selectedNodeId);
             }
         } else {
+            // Hide info panel only if nothing selected
+            this.hideInfoPanel();
             if (this.graphLoader) {
                 this.graphLoader.resetHighlight();
             }
@@ -165,22 +165,30 @@ AFRAME.registerComponent('graph-interaction', {
         // Only process if this was the hovered node
         if (this.hoveredNodeId !== nodeId) return;
 
-        // Reset scale
-        nodeEl.setAttribute('scale', '1 1 1');
+        // Reset scale (but not for selected node)
+        if (this.selectedNodeId !== nodeId) {
+            nodeEl.setAttribute('scale', '1 1 1');
+        }
 
         // Clear hover tracking
         this.hoveredNodeId = null;
 
-        // Hide info panel
-        this.hideInfoPanel();
-
-        // Restore state based on selection
-        if (this.selectedNodeId) {
+        // If leaving the selected node, keep showing its info
+        // Otherwise hide info panel
+        if (this.selectedNodeId === nodeId) {
+            // Keep info panel visible for selected node
+            this.showInfoPanel(this.selectedNodeId);
+        } else if (this.selectedNodeId) {
+            // Leaving a non-selected node while something is selected
+            // Show the selected node's info instead
+            this.showInfoPanel(this.selectedNodeId);
             // Restore selection highlight
             if (this.graphLoader) {
                 this.graphLoader.highlightNode(this.selectedNodeId);
             }
         } else {
+            // Nothing selected, hide info panel
+            this.hideInfoPanel();
             // Reset everything
             if (this.graphLoader) {
                 this.graphLoader.resetHighlight();
