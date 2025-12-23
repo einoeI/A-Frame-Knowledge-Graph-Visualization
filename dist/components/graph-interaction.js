@@ -32,7 +32,6 @@ AFRAME.registerComponent('graph-interaction', {
         this.hoveredNodeId = null;
         this.graphLoader = null;
         this.infoPanel = null;
-        this.nodeJustClicked = false;
 
         // Bind event handlers
         this.onNodeMouseEnter = this.onNodeMouseEnter.bind(this);
@@ -72,28 +71,6 @@ AFRAME.registerComponent('graph-interaction', {
             sky.addEventListener('click', this.onBackgroundClick);
             sky.addEventListener('mouseenter', this.onBackgroundHover);
         }
-
-        // Add canvas-level click handler as fallback for deselection
-        const scene = document.querySelector('a-scene');
-        if (scene) {
-            this.onCanvasClick = this.onCanvasClick.bind(this);
-            scene.canvas.addEventListener('click', this.onCanvasClick);
-        }
-    },
-
-    onCanvasClick: function (evt) {
-        // Use a delay to let A-Frame node click process first
-        setTimeout(() => {
-            // Skip if a node was just clicked (flag set by onNodeClick)
-            if (this.nodeJustClicked) {
-                this.nodeJustClicked = false;
-                return;
-            }
-            // Deselect if something is selected and we clicked empty space
-            if (this.selectedNodeId) {
-                this.deselectNode();
-            }
-        }, 50);
     },
 
     setupNodeListeners: function () {
@@ -209,9 +186,6 @@ AFRAME.registerComponent('graph-interaction', {
 
     onNodeClick: function (evt) {
         evt.stopPropagation();
-
-        // Set flag to prevent canvas click from deselecting
-        this.nodeJustClicked = true;
 
         const nodeEl = evt.target;
         const nodeId = nodeEl.getAttribute('data-node-id');
