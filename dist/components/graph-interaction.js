@@ -82,15 +82,18 @@ AFRAME.registerComponent('graph-interaction', {
     },
 
     onCanvasClick: function (evt) {
-        // Skip if a node was just clicked (flag set by onNodeClick)
-        if (this.nodeJustClicked) {
-            this.nodeJustClicked = false;
-            return;
-        }
-        // Deselect if something is selected and we clicked empty space
-        if (this.selectedNodeId) {
-            this.deselectNode();
-        }
+        // Use a delay to let A-Frame node click process first
+        setTimeout(() => {
+            // Skip if a node was just clicked (flag set by onNodeClick)
+            if (this.nodeJustClicked) {
+                this.nodeJustClicked = false;
+                return;
+            }
+            // Deselect if something is selected and we clicked empty space
+            if (this.selectedNodeId) {
+                this.deselectNode();
+            }
+        }, 50);
     },
 
     setupNodeListeners: function () {
