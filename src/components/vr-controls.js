@@ -264,6 +264,7 @@ AFRAME.registerComponent('vr-boundary', {
         wall.setAttribute('height', height);
         wall.setAttribute('rotation', `0 ${rotationY} 0`);
         wall.setAttribute('material', `color: ${color}; opacity: ${opacity}; transparent: true; side: double`);
+        wall.setAttribute('class', 'raycastable');
         this.el.appendChild(wall);
     },
 
@@ -274,6 +275,7 @@ AFRAME.registerComponent('vr-boundary', {
         pillar.setAttribute('height', height);
         pillar.setAttribute('depth', 0.2);
         pillar.setAttribute('material', `color: ${color}; opacity: 0.5; transparent: true`);
+        pillar.setAttribute('class', 'raycastable');
         this.el.appendChild(pillar);
     }
 });
