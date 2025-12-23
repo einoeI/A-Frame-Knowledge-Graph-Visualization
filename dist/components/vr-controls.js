@@ -37,7 +37,7 @@ AFRAME.registerComponent('thumbstick-movement', {
         const speed = this.data.speed;
         const cameraRig = this.data.cameraRig.object3D;
 
-        // Get forward/right from camera RIG - like WASD
+        // Get forward/right from camera RIG (not head) - like WASD
         const forward = new THREE.Vector3(0, 0, -1);
         forward.applyQuaternion(cameraRig.quaternion);
         forward.y = 0;
