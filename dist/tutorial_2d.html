@@ -290,13 +290,13 @@
             'orcs': 'Orc'
         };
 
-        // Tutorial data - varied weights for different node sizes
+        // Tutorial data - varied weights for different node sizes (matching main visualization)
         const graphData = {
             nodes: [
-                { id: 'frodo', label: 'Frodo', race: 'hobbit', gender: 'male', weight: 120, total_connections: 3 },
-                { id: 'gandalf', label: 'Gandalf', race: 'ainur', gender: 'male', weight: 90, total_connections: 2 },
-                { id: 'aragorn', label: 'Aragorn', race: 'men', gender: 'male', weight: 60, total_connections: 2 },
-                { id: 'legolas', label: 'Legolas', race: 'elves', gender: 'male', weight: 35, total_connections: 1 }
+                { id: 'frodo', label: 'Frodo', race: 'hobbit', gender: 'male', weight: 200, total_connections: 3 },
+                { id: 'gandalf', label: 'Gandalf', race: 'ainur', gender: 'male', weight: 120, total_connections: 2 },
+                { id: 'aragorn', label: 'Aragorn', race: 'men', gender: 'male', weight: 70, total_connections: 2 },
+                { id: 'legolas', label: 'Legolas', race: 'elves', gender: 'male', weight: 30, total_connections: 1 }
             ],
             links: [
                 { source: 'frodo', target: 'gandalf', weight: 100 },
@@ -310,7 +310,12 @@
         const nodeMap = {};
         graphData.nodes.forEach(n => nodeMap[n.id] = n);
 
-        // Create vis.js nodes - labels outside (below) nodes
+        // Calculate node sizes (matching main 2D visualization)
+        const maxWeight = Math.max(...graphData.nodes.map(n => n.weight));
+        const minSize = 10;
+        const maxSize = 50;
+
+        // Create vis.js nodes - same style as main 2D visualization
         const nodes = new vis.DataSet(graphData.nodes.map(node => ({
             id: node.id,
             label: node.label,
@@ -318,23 +323,31 @@
             color: {
                 background: RACE_COLORS[node.race] || '#7A84DD',
                 border: RACE_COLORS[node.race] || '#7A84DD',
-                highlight: { background: '#046de7', border: '#046de7' }
+                highlight: { background: '#046de7', border: '#046de7' },
+                hover: {
+                    background: RACE_COLORS[node.race] || '#7A84DD',
+                    border: '#ffffff'
+                }
             },
-            size: 15 + (node.weight / 4),
-            font: {
-                color: 'white',
-                size: 14,
-                vadjust: -45
-            }
+            size: minSize + (node.weight / maxWeight) * (maxSize - minSize),
+            font: { color: 'white', size: 14 },
+            borderWidth: 2,
+            borderWidthSelected: 3
         })));
 
-        // Create vis.js edges
+        // Create vis.js edges - same style as main 2D visualization
+        const maxEdgeWeight = Math.max(...graphData.links.map(l => l.weight));
         const edges = new vis.DataSet(graphData.links.map((link, i) => ({
             id: i,
             from: link.source,
             to: link.target,
-            width: 1 + (link.weight / 50),
-            color: { color: '#666666', highlight: '#046de7' }
+            value: link.weight,
+            color: {
+                color: 'rgba(150, 150, 150, 0.4)',
+                highlight: '#046de7',
+                hover: 'rgba(150, 150, 150, 0.6)'
+            },
+            width: 1 + (link.weight / maxEdgeWeight) * 3
         })));
 
         // Create network
@@ -353,11 +366,27 @@
             },
             interaction: {
                 hover: true,
-                tooltipDelay: 0
+                tooltipDelay: 0,
+                hideEdgesOnDrag: false,
+                hideNodesOnDrag: false
+            },
+            nodes: {
+                shape: 'dot'
+            },
+            edges: {
+                smooth: {
+                    enabled: true,
+                    type: 'continuous'
+                }
             }
         };
 
         const network = new vis.Network(container, data, options);
+
+        // Disable physics after stabilization
+        network.once('stabilizationIterationsDone', function() {
+            network.setOptions({ physics: false });
+        });
 
         let selectedNode = null;
 
