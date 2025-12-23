@@ -118,8 +118,12 @@ AFRAME.registerComponent('graph-interaction', {
         // Don't re-trigger if already hovering this node
         if (this.hoveredNodeId === nodeId) return;
 
-        // Don't apply hover effects to the selected node itself
-        if (this.selectedNodeId === nodeId) return;
+        // For selected node, just show info panel (no highlight changes)
+        if (this.selectedNodeId === nodeId) {
+            this.hoveredNodeId = nodeId;
+            this.showInfoPanel(nodeId);
+            return;
+        }
 
         // Reset previous hovered node's scale (if different from selected)
         if (this.hoveredNodeId && this.hoveredNodeId !== this.selectedNodeId) {
