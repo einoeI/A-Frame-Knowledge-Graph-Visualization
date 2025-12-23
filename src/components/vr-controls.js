@@ -277,3 +277,106 @@ AFRAME.registerComponent('vr-boundary', {
         this.el.appendChild(pillar);
     }
 });
+
+
+/**
+ * VR Legend Component
+ * Shows race color legend in VR view
+ */
+AFRAME.registerComponent('vr-legend', {
+    schema: {
+        width: { type: 'number', default: 0.4 },
+        backgroundColor: { type: 'color', default: '#1e1e32' },
+        borderColor: { type: 'color', default: '#7A84DD' }
+    },
+
+    init: function () {
+        this.createLegend();
+
+        // Only show in VR mode
+        this.el.setAttribute('visible', false);
+
+        this.onEnterVR = this.onEnterVR.bind(this);
+        this.onExitVR = this.onExitVR.bind(this);
+
+        this.el.sceneEl.addEventListener('enter-vr', this.onEnterVR);
+        this.el.sceneEl.addEventListener('exit-vr', this.onExitVR);
+    },
+
+    onEnterVR: function () {
+        this.el.setAttribute('visible', true);
+    },
+
+    onExitVR: function () {
+        this.el.setAttribute('visible', false);
+    },
+
+    createLegend: function () {
+        const data = this.data;
+
+        const races = [
+            { name: 'Hobbits', color: '#BD9267' },
+            { name: 'Men', color: '#7A84DD' },
+            { name: 'Elves', color: '#8ACAE5' },
+            { name: 'Dwarves', color: '#B15B60' },
+            { name: 'Ainur', color: '#3A7575' },
+            { name: 'Ents', color: '#E3845D' },
+            { name: 'Orcs', color: '#020104' }
+        ];
+
+        const rowHeight = 0.045;
+        const panelHeight = races.length * rowHeight + 0.08;
+
+        // Background
+        const bg = document.createElement('a-plane');
+        bg.setAttribute('width', data.width);
+        bg.setAttribute('height', panelHeight);
+        bg.setAttribute('color', data.backgroundColor);
+        bg.setAttribute('opacity', 0.9);
+        this.el.appendChild(bg);
+
+        // Border
+        const border = document.createElement('a-plane');
+        border.setAttribute('width', data.width + 0.01);
+        border.setAttribute('height', panelHeight + 0.01);
+        border.setAttribute('color', data.borderColor);
+        border.setAttribute('position', '0 0 -0.001');
+        this.el.appendChild(border);
+
+        // Title
+        const title = document.createElement('a-text');
+        title.setAttribute('value', 'Races');
+        title.setAttribute('color', '#8ACAE5');
+        title.setAttribute('align', 'center');
+        title.setAttribute('position', `0 ${panelHeight/2 - 0.035} 0.01`);
+        title.setAttribute('scale', '0.18 0.18 0.18');
+        this.el.appendChild(title);
+
+        // Race items
+        let y = panelHeight/2 - 0.07;
+        races.forEach(race => {
+            // Color circle
+            const circle = document.createElement('a-circle');
+            circle.setAttribute('radius', 0.015);
+            circle.setAttribute('color', race.color);
+            circle.setAttribute('position', `${-data.width/2 + 0.04} ${y} 0.01`);
+            this.el.appendChild(circle);
+
+            // Race name
+            const text = document.createElement('a-text');
+            text.setAttribute('value', race.name);
+            text.setAttribute('color', '#e0e0e0');
+            text.setAttribute('align', 'left');
+            text.setAttribute('position', `${-data.width/2 + 0.07} ${y} 0.01`);
+            text.setAttribute('scale', '0.15 0.15 0.15');
+            this.el.appendChild(text);
+
+            y -= rowHeight;
+        });
+    },
+
+    remove: function () {
+        this.el.sceneEl.removeEventListener('enter-vr', this.onEnterVR);
+        this.el.sceneEl.removeEventListener('exit-vr', this.onExitVR);
+    }
+});
