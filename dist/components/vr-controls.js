@@ -7,13 +7,12 @@
 
 /**
  * Thumbstick Movement Component (Left Controller)
- * Movement based on gaze/head direction (where you're looking)
+ * WASD-style movement based on camera rig orientation
  */
 AFRAME.registerComponent('thumbstick-movement', {
     schema: {
         speed: { type: 'number', default: 3 },
-        cameraRig: { type: 'selector', default: '#cameraRig' },
-        camera: { type: 'selector', default: '#camera' }
+        cameraRig: { type: 'selector', default: '#cameraRig' }
     },
 
     init: function () {
@@ -31,23 +30,21 @@ AFRAME.registerComponent('thumbstick-movement', {
     },
 
     tick: function (time, deltaTime) {
-        if (!this.data.cameraRig || !this.data.camera) return;
+        if (!this.data.cameraRig) return;
         if (Math.abs(this.thumbstickX) < 0.1 && Math.abs(this.thumbstickY) < 0.1) return;
 
         const dt = deltaTime / 1000;
         const speed = this.data.speed;
         const cameraRig = this.data.cameraRig.object3D;
-        const camera = this.data.camera.object3D;
 
-        // Get forward/right from camera (gaze direction)
+        // Get forward/right from camera RIG - like WASD
         const forward = new THREE.Vector3(0, 0, -1);
-        camera.getWorldQuaternion(forward);
-        forward.set(0, 0, -1).applyQuaternion(camera.getWorldQuaternion(new THREE.Quaternion()));
+        forward.applyQuaternion(cameraRig.quaternion);
         forward.y = 0;
         forward.normalize();
 
         const right = new THREE.Vector3(1, 0, 0);
-        right.applyQuaternion(camera.getWorldQuaternion(new THREE.Quaternion()));
+        right.applyQuaternion(cameraRig.quaternion);
         right.y = 0;
         right.normalize();
 
