@@ -71,6 +71,24 @@ AFRAME.registerComponent('graph-interaction', {
             sky.addEventListener('click', this.onBackgroundClick);
             sky.addEventListener('mouseenter', this.onBackgroundHover);
         }
+
+        // Add canvas-level click handler as fallback for deselection
+        const scene = document.querySelector('a-scene');
+        if (scene) {
+            this.onCanvasClick = this.onCanvasClick.bind(this);
+            scene.canvas.addEventListener('click', this.onCanvasClick);
+        }
+    },
+
+    onCanvasClick: function (evt) {
+        // Use a small delay to let node clicks process first
+        setTimeout(() => {
+            // If no node was clicked (hoveredNodeId would be set by mouseenter before click)
+            // and we have a selection, check if we should deselect
+            if (this.selectedNodeId && !this.hoveredNodeId) {
+                this.deselectNode();
+            }
+        }, 10);
     },
 
     setupNodeListeners: function () {
