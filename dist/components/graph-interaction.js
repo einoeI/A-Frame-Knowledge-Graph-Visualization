@@ -32,6 +32,7 @@ AFRAME.registerComponent('graph-interaction', {
         this.hoveredNodeId = null;
         this.graphLoader = null;
         this.infoPanel = null;
+        this.nodeJustClicked = false;
 
         // Bind event handlers
         this.onNodeMouseEnter = this.onNodeMouseEnter.bind(this);
@@ -81,14 +82,15 @@ AFRAME.registerComponent('graph-interaction', {
     },
 
     onCanvasClick: function (evt) {
-        // Use a small delay to let node clicks process first
-        setTimeout(() => {
-            // If no node was clicked (hoveredNodeId would be set by mouseenter before click)
-            // and we have a selection, check if we should deselect
-            if (this.selectedNodeId && !this.hoveredNodeId) {
-                this.deselectNode();
-            }
-        }, 10);
+        // Skip if a node was just clicked (flag set by onNodeClick)
+        if (this.nodeJustClicked) {
+            this.nodeJustClicked = false;
+            return;
+        }
+        // Deselect if something is selected and we clicked empty space
+        if (this.selectedNodeId) {
+            this.deselectNode();
+        }
     },
 
     setupNodeListeners: function () {
@@ -204,6 +206,9 @@ AFRAME.registerComponent('graph-interaction', {
 
     onNodeClick: function (evt) {
         evt.stopPropagation();
+
+        // Set flag to prevent canvas click from deselecting
+        this.nodeJustClicked = true;
 
         const nodeEl = evt.target;
         const nodeId = nodeEl.getAttribute('data-node-id');
