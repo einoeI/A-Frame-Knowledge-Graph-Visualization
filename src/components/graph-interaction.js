@@ -71,15 +71,6 @@ AFRAME.registerComponent('graph-interaction', {
             sky.addEventListener('click', this.onBackgroundClick);
             sky.addEventListener('mouseenter', this.onBackgroundHover);
         }
-
-        // Listen to all raycastable elements (walls, pillars, etc.)
-        const raycastables = document.querySelectorAll('.raycastable');
-        raycastables.forEach(el => {
-            if (el.id !== 'background' && el.tagName !== 'A-SKY') {
-                el.addEventListener('click', this.onBackgroundClick);
-                el.addEventListener('mouseenter', this.onBackgroundHover);
-            }
-        });
     },
 
     setupNodeListeners: function () {
