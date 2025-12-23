@@ -290,13 +290,13 @@
             'orcs': 'Orc'
         };
 
-        // Tutorial data
+        // Tutorial data - varied weights for different node sizes
         const graphData = {
             nodes: [
-                { id: 'frodo', label: 'Frodo', race: 'hobbit', gender: 'male', weight: 100, total_connections: 3 },
-                { id: 'gandalf', label: 'Gandalf', race: 'ainur', gender: 'male', weight: 80, total_connections: 2 },
-                { id: 'aragorn', label: 'Aragorn', race: 'men', gender: 'male', weight: 70, total_connections: 2 },
-                { id: 'legolas', label: 'Legolas', race: 'elves', gender: 'male', weight: 50, total_connections: 1 }
+                { id: 'frodo', label: 'Frodo', race: 'hobbit', gender: 'male', weight: 120, total_connections: 3 },
+                { id: 'gandalf', label: 'Gandalf', race: 'ainur', gender: 'male', weight: 90, total_connections: 2 },
+                { id: 'aragorn', label: 'Aragorn', race: 'men', gender: 'male', weight: 60, total_connections: 2 },
+                { id: 'legolas', label: 'Legolas', race: 'elves', gender: 'male', weight: 35, total_connections: 1 }
             ],
             links: [
                 { source: 'frodo', target: 'gandalf', weight: 100 },
@@ -310,17 +310,22 @@
         const nodeMap = {};
         graphData.nodes.forEach(n => nodeMap[n.id] = n);
 
-        // Create vis.js nodes
+        // Create vis.js nodes - labels outside (below) nodes
         const nodes = new vis.DataSet(graphData.nodes.map(node => ({
             id: node.id,
             label: node.label,
+            shape: 'dot',
             color: {
                 background: RACE_COLORS[node.race] || '#7A84DD',
                 border: RACE_COLORS[node.race] || '#7A84DD',
                 highlight: { background: '#046de7', border: '#046de7' }
             },
-            size: 20 + (node.weight / 5),
-            font: { color: 'white', size: 14 }
+            size: 15 + (node.weight / 4),
+            font: {
+                color: 'white',
+                size: 14,
+                vadjust: -45
+            }
         })));
 
         // Create vis.js edges
