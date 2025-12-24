@@ -288,7 +288,7 @@ AFRAME.registerComponent('vr-legend', {
         width: { type: 'number', default: 0.4 },
         backgroundColor: { type: 'color', default: '#1e1e32' },
         borderColor: { type: 'color', default: '#7A84DD' },
-        vrPosition: { type: 'vec3', default: { x: -0.5, y: -0.35, z: -2.5 } }
+        vrPosition: { type: 'vec3', default: { x: -0.7, y: -0.35, z: -2.5 } }
     },
 
     init: function () {
