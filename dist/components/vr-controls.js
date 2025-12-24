@@ -354,24 +354,24 @@ AFRAME.registerComponent('vr-legend', {
         title.setAttribute('scale', '0.18 0.18 0.18');
         this.el.appendChild(title);
 
-        // Race items
+        // Race items (right-aligned: text on left, circle on right)
         let y = panelHeight/2 - 0.07;
         races.forEach(race => {
-            // Color circle
-            const circle = document.createElement('a-circle');
-            circle.setAttribute('radius', 0.015);
-            circle.setAttribute('color', race.color);
-            circle.setAttribute('position', `${-data.width/2 + 0.04} ${y} 0.01`);
-            this.el.appendChild(circle);
-
-            // Race name
+            // Race name (right-aligned, to the left of circle)
             const text = document.createElement('a-text');
             text.setAttribute('value', race.name);
             text.setAttribute('color', '#e0e0e0');
-            text.setAttribute('align', 'left');
-            text.setAttribute('position', `${-data.width/2 + 0.07} ${y} 0.01`);
+            text.setAttribute('align', 'right');
+            text.setAttribute('position', `${data.width/2 - 0.07} ${y} 0.01`);
             text.setAttribute('scale', '0.15 0.15 0.15');
             this.el.appendChild(text);
+
+            // Color circle (on the right side)
+            const circle = document.createElement('a-circle');
+            circle.setAttribute('radius', 0.015);
+            circle.setAttribute('color', race.color);
+            circle.setAttribute('position', `${data.width/2 - 0.04} ${y} 0.01`);
+            this.el.appendChild(circle);
 
             y -= rowHeight;
         });
