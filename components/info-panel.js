@@ -14,11 +14,35 @@ AFRAME.registerComponent('info-panel', {
         borderColor: { type: 'color', default: '#7A84DD' },
         textColor: { type: 'color', default: '#e0e0e0' },
         labelColor: { type: 'color', default: '#ffffff' },
-        titleColor: { type: 'color', default: '#8ACAE5' }
+        titleColor: { type: 'color', default: '#8ACAE5' },
+        desktopPosition: { type: 'vec3', default: { x: 0.7, y: -0.1, z: -1.5 } },
+        vrPosition: { type: 'vec3', default: { x: 0.9, y: -0.1, z: -2.5 } }
     },
 
     init: function () {
         this.createPanel();
+
+        // Set initial position for desktop
+        this.el.setAttribute('position', this.data.desktopPosition);
+
+        // Listen for VR mode changes
+        this.onEnterVR = this.onEnterVR.bind(this);
+        this.onExitVR = this.onExitVR.bind(this);
+        this.el.sceneEl.addEventListener('enter-vr', this.onEnterVR);
+        this.el.sceneEl.addEventListener('exit-vr', this.onExitVR);
+    },
+
+    onEnterVR: function () {
+        this.el.setAttribute('position', this.data.vrPosition);
+    },
+
+    onExitVR: function () {
+        this.el.setAttribute('position', this.data.desktopPosition);
+    },
+
+    remove: function () {
+        this.el.sceneEl.removeEventListener('enter-vr', this.onEnterVR);
+        this.el.sceneEl.removeEventListener('exit-vr', this.onExitVR);
     },
 
     createPanel: function () {
