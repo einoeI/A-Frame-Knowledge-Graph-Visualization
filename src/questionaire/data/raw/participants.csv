@@ -1,0 +1,11 @@
+participant_id,date,age,gender,field_of_study,education,vr_experience,dataviz_experience,lotr_familiarity,health_conditions,counterbalancing,vr_type,task_set_first,task_set_second,notes
+8,25.12.2025,27,male,student,master,minimal,basic,somewhat,none,2D_first,web_3d,A,B,
+7,25.12.2025,27,male,Computational Science,master,minimal,intermediate,very,none,VR_first,web_3d,A,B,
+3,23.12.2025,28,female,Computational Science,master,some,basic,somewhat,none,VR_first,web_3d,A,B,
+1,20.12.2025,32,male,computational science,master,minimal,intermediate,somewhat,none,2D_first,web_3d,B,A,
+9,25.12.2025,22,female,"student, media",bachelor,minimal,none,somewhat,none,VR_first,oculus,A,B,
+2,2025-12-23,26,female,computer science,master,minimal,intermediate,somewhat,none,2D_first,oculus,A,B,
+5,2025-12-25,27,male,Musicology,bachelor,minimal,intermediate,somewhat,none,VR_first,oculus,A,B,
+6,2025-12-25,26,female,Sociology,master,minimal,intermediate,very,none,2D_first,oculus,A,B,
+10,2025-12-25,58,female,Rezeptionist,meister,minimal,none,very,none,2D_first,oculus,A,B,
+4,2025-12-25,62,male,library storekeeper,meister,minimal,none,not_familiar,none,VR_first,oculus,A,B,
