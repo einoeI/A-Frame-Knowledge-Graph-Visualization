@@ -65,6 +65,11 @@ CLAUDE.md
 claude.md
 docs/
 
-# User study data (confidential)
-src/questionaire/
-questionaire/
+# User study data
+src/questionaire/data/processed/*
+src/questionaire/data/analysis/*
+
+# Keep scripts tracked:
+# - src/questionaire/process_data.py
+src/questionaire/data_entry_helper.py
+src/questionaire/DATA_COLLECTION_PLAN.md
