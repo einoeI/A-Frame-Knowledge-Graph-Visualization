@@ -2,12 +2,55 @@
 
 A comparative visualization of the Lord of the Rings character interaction network in VR (A-Frame) and 2D (Vis.js) for the bachelor's thesis **"Enhancing Data Exploration: A Comparative Study of VR and 2D Data Visualizations based on Public Knowledge Graphs"** conducted at the Vienna University of Economics and Business (WU Wien).
 
+## Preview
+
 ![3D Graph](src/images/3D_graph.png)
 ![2D Graph](src/images/2D_graph.png)
 
 ## Thesis Objective
 
 The aim of this work is to gain deeper insights into VR knowledge graph visualizations and evaluate their usefulness in comparison with traditional 2D equivalents through a comprehensive user study (N=10).
+
+
+## Live Demo (GitHub Pages)
+
+| Visualization | URL |
+|--------------|-----|
+| **3D VR Main** | https://einoei.github.io/A-Frame-Knowledge-Graph-Visualization/ |
+| 3D Tutorial | https://einoei.github.io/A-Frame-Knowledge-Graph-Visualization/tutorial_3d.html |
+| **2D Main** | https://einoei.github.io/A-Frame-Knowledge-Graph-Visualization/2d_visualization.html |
+| 2D Tutorial | https://einoei.github.io/A-Frame-Knowledge-Graph-Visualization/tutorial_2d.html |
+
+## VR Compatibility
+
+- **Desktop**: Chrome, Firefox, Edge (mouse + keyboard)
+- **VR Headsets**: Meta Quest 2/3/Pro, HTC Vive, Valve Index (via WebXR)
+- **Mobile**: No support
+
+## Running Locally
+
+### Prerequisites
+- Node.js (v24.12.0)
+
+### Setup
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm start
+```
+
+Open http://localhost:8080 in your browser.
+
+### Build for Deployment
+
+```bash
+npm run build
+```
+
+This copies files to the `dist/` folder for deployment.
 
 ## Dataset
 
@@ -34,46 +77,6 @@ Source: ["morethanbooks" project's Lord of the Rings network dataset](https://gi
 **Development Tools:**
 - Python (data processing, statistical analysis)
 - Claude Code (AI-assisted development) - see [CLAUDE_CODE_USAGE.md](CLAUDE_CODE_USAGE.md)
-
-## Live Demo (GitHub Pages)
-
-| Visualization | URL |
-|--------------|-----|
-| **3D VR Main** | https://einoei.github.io/A-Frame-Knowledge-Graph-Visualization/ |
-| 3D Tutorial | https://einoei.github.io/A-Frame-Knowledge-Graph-Visualization/tutorial_3d.html |
-| **2D Main** | https://einoei.github.io/A-Frame-Knowledge-Graph-Visualization/2d_visualization.html |
-| 2D Tutorial | https://einoei.github.io/A-Frame-Knowledge-Graph-Visualization/tutorial_2d.html |
-
-## VR Compatibility
-
-- **Desktop**: Chrome, Firefox, Edge (mouse + keyboard)
-- **VR Headsets**: Meta Quest 2/3/Pro, HTC Vive, Valve Index (via WebXR)
-- **Mobile**: No support
-
-## Running Locally
-
-### Prerequisites
-- Node.js (any recent version)
-
-### Setup
-
-```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm start
-```
-
-Open http://localhost:8080 in your browser.
-
-### Build for Deployment
-
-```bash
-npm run build
-```
-
-This copies files to the `dist/` folder for deployment.
 
 ## Controls
 
