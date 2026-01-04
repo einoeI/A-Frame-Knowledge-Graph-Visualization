@@ -2,8 +2,8 @@
 
 A comparative visualization of the Lord of the Rings character interaction network in VR (A-Frame) and 2D (Vis.js) for the bachelor's thesis **"Enhancing Data Exploration: A Comparative Study of VR and 2D Data Visualizations based on Public Knowledge Graphs"** conducted at the Vienna University of Economics and Business (WU Wien).
 
-![3D Graph](src\images\3D_graph.png)
-![2D Graph](src\images\2D_graph.png)
+![3D Graph](src/images/3D_graph.png)
+![2D Graph](src/images/2D_graph.png)
 
 ## Thesis Objective
 
