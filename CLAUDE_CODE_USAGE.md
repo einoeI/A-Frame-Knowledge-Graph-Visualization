@@ -2,8 +2,8 @@
 
 ## Used For
 
-### Visualization Implementation (Iterative Improvement)
-- A-Frame 3D/VR components (graph-loader.js, graph-interaction.js, info-panel.js, vr-controls.js)
+### Visualization Implementation Support
+- A-Frame 3D/VR components refinement (graph-loader.js, graph-interaction.js, info-panel.js, vr-controls.js)
 - 2D Vis.js visualization refinement
 - VR click/hover interaction fixes
 - Info panel positioning (desktop vs VR)
@@ -27,6 +27,7 @@
 
 ## NOT Used For
 
+- Research, Project Architecture and Implementation Decisions
 - User study design & execution
 - Thesis writing (literature review, discussion, conclusions)
 
