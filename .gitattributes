@@ -1,0 +1,16 @@
+# GitHub Linguist overrides
+# See: https://github.com/github/linguist/blob/master/docs/overrides.md
+
+# Exclude from language statistics
+dist/** linguist-generated
+node_modules/** linguist-vendored
+_archive/** linguist-vendored
+*.min.js linguist-vendored
+
+# Mark source code as documentation (if needed)
+# *.md linguist-documentation
+
+# Force detection of main languages
+src/components/*.js linguist-detectable
+src/*.html linguist-detectable
+*.py linguist-detectable
